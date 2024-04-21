@@ -29,7 +29,12 @@ class Transformacje_wspolrzednych:
     
     
     def blh_to_xyz(self, fi, lam, h, elipsoida):
-        pass
+        N = a / np.sqrt(1 - e2 * np.sin(fi)**2)
+        X = (N + h) * np.cos(fi) * np.cos(lam)
+        Y = (N + h) * np.cos(fi) * np.sin(lam)
+        Z = (N * (1-e2) + h) * np.sin(fi)
+        return(X, Y, Z)
+    
     
     
     def xyz_to_neu(self, x, y, z, x_ref, y_ref, z_ref):
