@@ -10,6 +10,22 @@ a = 6378137
 e2 = 0.00669438002290
 
 class Transformacje_wspolrzednych:
+    def __init__(self, model: str = "wgs84"):
+        """
+        Okresla uklad w jakim beda liczone kolejne funkcje ["wgs84" / "grs80"]
+        """
+        if model == "wgs84":
+            self.a = 6378137.0 # semimajor_axis
+            self.b = 6356752.31424518 # semiminor_axis
+        elif model == "grs80":
+            self.a = 6378137.0
+            self.b = 6356752.31414036
+        else:
+            raise NotImplementedError(f"{model} model not implemented")
+        self.flattening = (self.a - self.b) / self.a
+        self.e2 = (2 * self.flattening - self.flattening ** 2)
+        
+
     def __init__(self):
         pass
     
@@ -38,6 +54,8 @@ class Transformacje_wspolrzednych:
     
     
     def xyz_to_neu(self, x, y, z, x_ref, y_ref, z_ref):
+        
+        
         pass
 
     def bl_to_2000(self, fi, lam, h, elipsoida):
