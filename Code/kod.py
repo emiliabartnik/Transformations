@@ -16,10 +16,13 @@ class Transformacje_wspolrzednych:
         """
         if model == "wgs84":
             self.a = 6378137.0 # semimajor_axis
-            self.b = 6356752.31424518 # semiminor_axis
+            self.b = 6356752.3142 # semiminor_axis
         elif model == "grs80":
             self.a = 6378137.0
-            self.b = 6356752.31414036
+            self.b = 6356752.3141
+        elif model == "krasowski":
+            self.a = 6378245 
+            self.b = 6356863.019
         else:
             raise NotImplementedError(f"{model} model not implemented")
         self.flattening = (self.a - self.b) / self.a
@@ -29,7 +32,7 @@ class Transformacje_wspolrzednych:
     def __init__(self):
         pass
     
-    def xyz_to_blh(self, X,Y,Z,elipsoida):
+    def xyz_to_blh(self, X,Y,Z):
         p = np.sqrt(X**2 + Y**2)
         lam = np.arctan2(Y,X)
         phi = np.arctan(Z/(p*(1-e2)))
