@@ -5,10 +5,6 @@ Created on Sun Apr 21 18:49:52 2024
 @author: weron
 """
 import numpy as np
-# import pandas as pd
-
-# a = 6378137
-# e2 = 0.00669438002290
 
 class Transformacje_wspolrzednych:
     def __init__(self, model: str = "1"):
@@ -16,8 +12,8 @@ class Transformacje_wspolrzednych:
         Okresla uklad w jakim beda liczone kolejne funkcje ["wgs84" / "grs80" / "Krasowski"]
         """
         if model == "1":
-            self.a = 6378137.0 # semimajor_axis
-            self.b = 6356752.3142 # semiminor_axis
+            self.a = 6378137.0 
+            self.b = 6356752.3142 
         elif model == "2":
             self.a = 6378137.0
             self.b = 6356752.3141
@@ -79,9 +75,13 @@ class Transformacje_wspolrzednych:
         """
         results = []
         with open(input_file, 'r') as file:
-
-        
+            found_start = False
             for line in file:
+                if line.startswith('# -----------------------------------------------------'):
+                    found_start = True
+                    continue
+                if not found_start:
+                    continue
                 data = list(map(float, line.strip().split(',')))
                 if transform_type == '1':
                     result = self.xyz2blh(data)
@@ -97,7 +97,6 @@ class Transformacje_wspolrzednych:
                     print("Niepoprawny typ transformacji.")
                     return
                 
-                #results.append(','.join(map(str, result)))
                 results.append(result)
                 
 
@@ -107,43 +106,45 @@ class Transformacje_wspolrzednych:
 
                 if format_choice == '3':  # blh2xyz
                     # Nagłówek "b l h" w odpowiednich kolumnach
-                    file.write("{:>6}{:>15}{:>17}\n".format("X", "Y", "Z"))
+                    file.write("{:>6}{:>15}{:>17}\n".format("X [m]", "Y [m]", "Z [m]"))
                 elif format_choice == '2' or format_choice == '1':  # xyz2blh lub inne transformacje
                     # Nagłówek "b l h" w odpowiednich kolumnach
                     file.write("{:>6}{:>15}{:>17}\n".format("b", "l", "h"))
 
     # Wyniki
                 for result in results:
-                    if format_choice == '3':  # blh2xyz
-                        X_str = f"{result[0]:.8f}"
-                        Y_str = f"{result[1]:.8f}"
-                        Z_str = f"{result[2]:.8f}"
-                        file.write("{:<15}{:<15}{:<15}\n".format(X_str, Y_str, Z_str))
-                    elif format_choice == '2' or format_choice == '1':  # xyz2blh lub inne transformacje
-                        phi, lam, h = result
-                        if format_choice == '2':  # dms
-                            phi_deg = phi[0]
-                            phi_min = phi[1]
-                            phi_sec = phi[2]
-                            phi_str = f"{phi_deg:02d}°{phi_min:02d}'{phi_sec:05.2f}\""
-                            
-                            lam_deg = lam[0]
-                            lam_min = lam[1]
-                            lam_sec = lam[2]
-                            lam_str = f"{lam_deg:02d}°{lam_min:02d}'{lam_sec:05.2f}\""
-                        elif format_choice == '1':  # degrees_decimal
-                            phi_str = f"{phi:.8f}"
-                            lam_str = f"{lam:.8f}"
-                            h_str = f"{h:.8f}"
-                            file.write("{:<15}{:<15}{:<15}\n".format(phi_str, lam_str, h_str))
-                # for i in range(0,len(result)):
-                #     file.write(f"{result[i]} | ")
-                # h_str = f"{h:.4f}"
-                # file.write("\n_________________________________________________\n")
-                # file.write("{:<15} {:<15} {:<15}\n".format(phi_str, lam_str, h_str))
-               
+                   if format_choice == '3':  # xyz2blh
+                       X_str = f"{result[0]:.3f}"
+                       Y_str = f"{result[1]:.3f}"
+                       Z_str = f"{result[2]:.3f}"
+                       file.write("{:<15}, {:<15}, {:<15}\n".format(X_str, Y_str, Z_str))
+                   elif format_choice == '2' or format_choice == '1':  # xyz2blh lub inne transformacje
+                       phi, lam, h = result
+                       if format_choice == '2':  # dms
+                           phi_deg, phi_rem = divmod(abs(phi), 1)
+                           phi_min, phi_sec = divmod(phi_rem * 60, 1)
+                           phi_sec *= 60
+                           if phi < 0:
+                               phi_str = f"-{int(phi_deg):02d}°{int(phi_min):02d}'{phi_sec:.5f}\""
+                           else:
+                               phi_str = f"{int(phi_deg):02d}°{int(phi_min):02d}'{phi_sec:.5f}\""
+        
+                           lam_deg, lam_rem = divmod(abs(lam), 1)
+                           lam_min, lam_sec = divmod(lam_rem * 60, 1)
+                           lam_sec *= 60
+                           if lam < 0:
+                               lam_str = f"-{int(lam_deg):02d}°{int(lam_min):02d}'{lam_sec:.5f}\""
+                           else:
+                               lam_str = f"{int(lam_deg):02d}°{int(lam_min):02d}'{lam_sec:.5f}\""
+                           h_str = f"{h:.3f}"
+                           file.write("{:<15}{:<15}{:<15}\n".format(phi_str, lam_str, h_str))
+                       elif format_choice == '1':  # degrees_decimal
+                           phi_str = f"{phi:.8f}"
+                           lam_str = f"{lam:.8f}"
+                           h_str = f"{h:.8f}"
+                           file.write("{:<15}{:<15}{:<15}\n".format(phi_str, lam_str, h_str))
 
-                
+                       
 
     
 if __name__ =="__main__":
