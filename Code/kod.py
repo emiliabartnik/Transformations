@@ -124,9 +124,9 @@ class Transformacje_wspolrzednych:
         N1 = self.Np(f1)
         t1 = tan(f1)
         eta21 = e22 * (cos(f1))**2 
-        f = f1 - (ygk**2 * t1 / (2*M1*N1)) * (1-(ygk**2/(12*N1**2)) * (5 + 3 * t1**2 + eta21 - 9 * eta21 * t1**2 - 4 * eta21**2) + (ygk**4/(360 * N1**4)) * (61 + 90 * t1**2 + 45 * t1**4))
-        l = l0 + (ygk / (N1 * np.cos(f1))) * ((1 - (ygk**2 / (6 *N1**2)) * (1 + 2*t1**2 + eta21) + (ygk**4 / (120*N1**4)) * (5 + 28*t1**2 +24*t1**4 +6*eta21 + 8*eta21*t1**2)))
-        result = [f,l]
+        phi = f1 - (ygk**2 * t1 / (2*M1*N1)) * (1-(ygk**2/(12*N1**2)) * (5 + 3 * t1**2 + eta21 - 9 * eta21 * t1**2 - 4 * eta21**2) + (ygk**4/(360 * N1**4)) * (61 + 90 * t1**2 + 45 * t1**4))
+        lam = l0 + (ygk / (N1 * np.cos(f1))) * ((1 - (ygk**2 / (6 *N1**2)) * (1 + 2*t1**2 + eta21) + (ygk**4 / (120*N1**4)) * (5 + 28*t1**2 +24*t1**4 +6*eta21 + 8*eta21*t1**2)))
+        result = [phi,lam]
         return result
     
     def bl2PL2000(self, plh, format = '6'):
@@ -162,18 +162,20 @@ class Transformacje_wspolrzednych:
     def PL2000tobl(self,x2000y2000, format = '7'):
         m2000 = 0.999923
         x2000, y2000 = x2000y2000
-        if str(y2000).startswith('7'):
-            strefa = 7
-        elif str(y2000).startswith('6'):
-            strefa = 6
-        elif str(y2000).startswith('8'):
-            strefa = 8
-        elif str(y2000).startswith('5'):
-            strefa = 5
-        else:
-            print("Nie można określić strefy")
+        for i in y2000:
+            if str(i).startswith('7'):
+                nr = 7
+            elif str(i).startswith('6'):
+                nr = 6
+            elif str(i).startswith('8'):
+                nr = 8
+            elif str(i).startswith('5'):
+                nr = 5
+            else:
+                print("Nie można określić strefy")
+            
         xgk = x2000 / m2000
-        ygk = (y2000 - strefa * 1000000 - 500000) / m2000
+        ygk = (y2000 - nr * 1000000 - 500000) / m2000
         
         A0 = 1 - self.e2/4 - 3*self.e2**2/64 - 5*self.e2**3/256
         f1 = xgk / (self.a * A0)
@@ -191,9 +193,9 @@ class Transformacje_wspolrzednych:
         N1 = self.Np(f1)
         t1 = tan(f1)
         eta21 = e22 * (cos(f1))**2 
-        f = f1 - (ygk**2 * t1 / (2*M1*N1)) * (1-(ygk**2/(12*N1**2)) * (5 + 3 * t1**2 + eta21 - 9 * eta21 * t1**2 - 4 * eta21**2) + (ygk**4/(360 * N1**4)) * (61 + 90 * t1**2 + 45 * t1**4))
-        l = l0 + (ygk / (N1 * np.cos(f1))) * ((1 - (ygk**2 / (6 *N1**2)) * (1 + 2*t1**2 + eta21) + (ygk**4 / (120*N1**4)) * (5 + 28*t1**2 +24*t1**4 +6*eta21 + 8*eta21*t1**2)))
-        result = [f,l]
+        phi = f1 - (ygk**2 * t1 / (2*M1*N1)) * (1-(ygk**2/(12*N1**2)) * (5 + 3 * t1**2 + eta21 - 9 * eta21 * t1**2 - 4 * eta21**2) + (ygk**4/(360 * N1**4)) * (61 + 90 * t1**2 + 45 * t1**4))
+        lam = l0 + (ygk / (N1 * np.cos(f1))) * ((1 - (ygk**2 / (6 *N1**2)) * (1 + 2*t1**2 + eta21) + (ygk**4 / (120*N1**4)) * (5 + 28*t1**2 +24*t1**4 +6*eta21 + 8*eta21*t1**2)))
+        result = [phi,lam]
         return result
     
     
@@ -221,11 +223,13 @@ class Transformacje_wspolrzednych:
                 elif transform_type == '2':
                     result = self.blh2xyz(data)
                 elif transform_type == '3':
-                    xyz_ref = list(map(float, input("Podaj XYZ referencyjne oddzielone przecinkiem (x,y,z): ").split(',')))
-                    result = self.xyz2neu(xyz_ref, data)
+                    result = self.bl2PL1992(data)
                 elif transform_type == '4':
-                    xyz_ref = list(map(float, input("Podaj XYZ referencyjne oddzielone przecinkiem (x,y,z): ").split(',')))
-                    result = self.neu2xyz(xyz_ref, data)
+                    result = self.PL1992tobl(data)
+                elif transform_type == '5':
+                    result = self.bl2PL2000(data)   
+                elif transform_type == '6':
+                    result = self.PL2000tobl(data)
                 else:
                     print("Niepoprawny typ transformacji.")
                     return
@@ -243,6 +247,11 @@ class Transformacje_wspolrzednych:
                 elif format_choice == '2' or format_choice == '1':  # xyz2blh lub inne transformacje
                     # Nagłówek "b l h" w odpowiednich kolumnach
                     file.write("{:>6}{:>15}{:>17}\n".format("b", "l", "h"))
+                elif format_choice == '4' or format_choice == '6':
+                    file.write("{:>6}{:>15}\n".format("X [m]", "Y [m]"))
+                elif format_choice == '5' or format_choice == '7':
+                    file.write("{:>6}{:>15}\n".format("b", "l"))
+                
 
     # Wyniki
                 for result in results:
@@ -276,7 +285,29 @@ class Transformacje_wspolrzednych:
                            lam_str = f"{lam:.8f}"
                            h_str = f"{h:.8f}"
                            file.write("{:<20}{:<20}{:<20}\n".format(phi_str, lam_str, h_str))
-
+                   elif format_choice == '4' or format_choice == '6':
+                       X_str = f"{result[0]:.3f}"
+                       Y_str = f"{result[1]:.3f}"
+                       file.write("{:<15}, {:<15}\n".format(X_str, Y_str))
+                   elif format_choice == '5' or format_choice == '7':
+                       phi, lam = result
+                       if format_choice == '2':  # dms
+                           phi_deg, phi_rem = divmod(abs(phi), 1)
+                           phi_min, phi_sec = divmod(phi_rem * 60, 1)
+                           phi_sec *= 60
+                           if phi < 0:
+                               phi_str = f"-{int(phi_deg):02d}°{int(phi_min):02d}'{phi_sec:.5f}\""
+                           else:
+                               phi_str = f"{int(phi_deg):02d}°{int(phi_min):02d}'{phi_sec:.5f}\""
+        
+                           lam_deg, lam_rem = divmod(abs(lam), 1)
+                           lam_min, lam_sec = divmod(lam_rem * 60, 1)
+                           lam_sec *= 60
+                           if lam < 0:
+                               lam_str = f"-{int(lam_deg):02d}°{int(lam_min):02d}'{lam_sec:.5f}\""
+                           else:
+                               lam_str = f"{int(lam_deg):02d}°{int(lam_min):02d}'{lam_sec:.5f}\""
+                           file.write("{:<20}{:<20}{:<20}\n".format(phi_str, lam_str))
                        
 
     
@@ -285,10 +316,10 @@ if __name__ =="__main__":
     geo = Transformacje_wspolrzednych()
     
     model = input('wybierz model: 1 - wgs84 / 2 - grs80 / 3 - Krasowski: ')
-    transform_type = input('Wybierz transformację (1 - xyz2blh, 2 - blh2xyz, 3 - xyz2neu, 4 - neu2xyz): ')
+    transform_type = input('Wybierz transformację (1 - xyz2blh, 2 - blh2xyz, 3 - bl2PL1992, 4 - PL1992tobl, 5 - bl2PL2000, 6 - PL2000tobl): ')
     input_file = input('Podaj nazwę pliku ze współrzędnymi: ')
     output_file = input('Podaj nazwę pliku pod jakim chcesz zapisać transformowane współrzędne: ')
-    format_choice = input('Wybierz format wyników (1 - degrees_decimal, 2 - dms, 3 - XYZ): ')
+    format_choice = input('Wybierz format wyników (1 - degrees_decimal, 2 - dms, 3 - XYZ, ): ')
     transformer = Transformacje_wspolrzednych(model)
     transformer.perform_transform(transform_type,input_file, output_file)
         
