@@ -5,6 +5,7 @@ Created on Sun Apr 21 18:49:52 2024
 @author: weron
 """
 import numpy as np
+from math import *
 
 class Transformacje_wspolrzednych:
     def __init__(self, model: str = "1"):
@@ -64,7 +65,139 @@ class Transformacje_wspolrzednych:
         Z = (N * (1-self.e2) + h) * np.sin(phi)
         result = [X, Y, Z]
         return result    
+    
+    def sigma(self, f):
+        A0 = 1 - self.e2/4 - 3*self.e2**2/64 - 5*self.e2**3/256
+        A2 = (3/8) * (self.e2 + self.e2**2/4 + 15*self.e2**3/128)
+        A4 = (15/256) * (self.e2**2 + 3*self.e2**3/4)
+        A6 = (35*self.e2**3)/3072
+        si = self.a * (A0 * f - A2 * np.sin(2*f) + A4 * np.sin(4*f) - A6 * np.sin(6*f))
+        return(si)
+    
+    def Np(self,f):
+        N = self.a / np.sqrt(1 - self.e2 * np.sin(f)**2)
+        return(N)
 
+
+    def Mp(self, f):
+        M = (self.a * (1 - self.e2)) / np.sqrt((1 - self.e2 * np.sin(f)**2)**3)
+        return(M)
+    
+    def bl2PL1992(self, plh, format = '4'):
+        m1992 = 0.9993
+        lam0 = np.deg2rad(19)
+        phi,lam,h = plh
+        b2 = self.a**2 * (1-self.e2)
+        e22 = (self.a**2 - b2) / b2
+        dl = lam - lam0
+        t = tan(f)
+        eta2 = e22 * (cos(f))**2
+        N = self.Np(phi)
+        si = self.sigma(f)
+        xgk = si + (dl**2/2) * N * np.sin(phi) * np.cos(phi) * ((1 + (dl**2/12)*(np.cos(phi))**2 * (5 -t**2 +9*eta2 + 4*eta2**2) + (dl**4/360) * np.cos(phi)**4 * (61 - 58 * t**2 + t**4 + 270*eta2 - 330 * eta2 * t**2)))
+        ygk = dl * N * np.cos(phi) * (1 + (dl**2/6) * np.cos(phi)**2 * (1 - t**2 + eta2) + (dl**4/120) * cos(phi)**4 * (5 - 18*t**2 + t**4 + 14*eta2 - 58*eta2*t**2))
+        x1992 = xgk * m1992 - 5300000
+        y1992 = ygk * m1992 + 500000
+        result = [x1992, y1992]
+        return result
+        
+        
+    def PL1992tobl(self,x92y92, format = '5'):
+        x92, y92 = x92y92
+        m1992 = 0.9993
+        xgk = (x92 +5300000) / m1992
+        ygk = (y92 -500000) / m1992
+        
+        A0 = 1 - self.e2/4 - 3*self.e2**2/64 - 5*self.e2**3/256
+        f1 = xgk / (self.a * A0)
+        while True:
+            fs = f1
+            s = self.sigma(f1)
+            f1 = f1 + (xgk - s)/(self.a * A0)
+            if abs(f1 - fs) < (0.000001/206265):
+                break
+        return(f1)
+        
+        b2 = self.a**2 * (1-self.e2)
+        e22 = (self.a**2 - b2) / b2
+        M1 = self.Mp(f1) 
+        N1 = self.Np(f1)
+        t1 = tan(f1)
+        eta21 = e22 * (cos(f1))**2 
+        f = f1 - (ygk**2 * t1 / (2*M1*N1)) * (1-(ygk**2/(12*N1**2)) * (5 + 3 * t1**2 + eta21 - 9 * eta21 * t1**2 - 4 * eta21**2) + (ygk**4/(360 * N1**4)) * (61 + 90 * t1**2 + 45 * t1**4))
+        l = l0 + (ygk / (N1 * np.cos(f1))) * ((1 - (ygk**2 / (6 *N1**2)) * (1 + 2*t1**2 + eta21) + (ygk**4 / (120*N1**4)) * (5 + 28*t1**2 +24*t1**4 +6*eta21 + 8*eta21*t1**2)))
+        result = [f,l]
+        return result
+    
+    def bl2PL2000(self, plh, format = '6'):
+        m2000=0.999923
+        phi, lam, h = plh
+        if lam >=np.deg2rad(13.5) and lam <= np.deg2rad(16.5):
+            strefa = 5
+            lam0 = np.deg2rad(15)
+        elif lam >np.deg2rad(16.5) and lam <= np.deg2rad(19.5):
+            strefa = 6
+            lam0 = np.deg2rad(18)
+        elif lam >np.deg2rad(19.5) and lam <= np.deg2rad(22.5):
+            strefa =7
+            lam0 = np.deg2rad(21)
+        elif lam >np.deg2rad(22.5) and lam <= np.deg2rad(25.5):
+            strefa = 8
+            lam0 = np.deg2rad(24)
+        b2 = self.a**2 * (1-self.e2)
+        e22 = (self.a**2 - b2) / b2
+        dl = lam - lam0
+        t = tan(f)
+        eta2 = e22 * (cos(f))**2
+        N = self.Np(phi)
+        si = self.sigma(phi)
+        xgk = si + (dl**2/2) * N * np.sin(f) * np.cos(f) * ((1 + (dl**2/12)*(np.cos(f))**2 * (5 -t**2 +9*eta2 + 4*eta2**2) + (dl**4/360) * np.cos(f)**4 * (61 - 58 * t**2 + t**4 + 270*eta2 - 330 * eta2 * t**2)))
+        ygk = dl * N * np.cos(f) * (1 + (dl**2/6) * np.cos(f)**2 * (1 - t**2 + eta2) + (dl**4/120) * cos(f)**4 * (5 - 18*t**2 + t**4 + 14*eta2 - 58*eta2*t**2))
+        x2000 = xgk * m2000
+        y2000 = ygk * m2000 + strefa * 1000000 + 500000
+        result = [x2000, y2000]
+        return result
+    
+    
+    def PL2000tobl(self,x2000y2000, format = '7'):
+        m2000 = 0.999923
+        x2000, y2000 = x2000y2000
+        if str(y2000).startswith('7'):
+            strefa = 7
+        elif str(y2000).startswith('6'):
+            strefa = 6
+        elif str(y2000).startswith('8'):
+            strefa = 8
+        elif str(y2000).startswith('5'):
+            strefa = 5
+        else:
+            print("Nie można określić strefy")
+        xgk = x2000 / m2000
+        ygk = (y2000 - strefa * 1000000 - 500000) / m2000
+        
+        A0 = 1 - self.e2/4 - 3*self.e2**2/64 - 5*self.e2**3/256
+        f1 = xgk / (self.a * A0)
+        while True:
+            fs = f1
+            s = self.sigma(f1)
+            f1 = f1 + (xgk - s)/(self.a * A0)
+            if abs(f1 - fs) < (0.000001/206265):
+                break
+        return(f1)
+        
+        b2 = self.a**2 * (1-self.e2)
+        e22 = (self.a**2 - b2) / b2
+        M1 = self.Mp(f1) 
+        N1 = self.Np(f1)
+        t1 = tan(f1)
+        eta21 = e22 * (cos(f1))**2 
+        f = f1 - (ygk**2 * t1 / (2*M1*N1)) * (1-(ygk**2/(12*N1**2)) * (5 + 3 * t1**2 + eta21 - 9 * eta21 * t1**2 - 4 * eta21**2) + (ygk**4/(360 * N1**4)) * (61 + 90 * t1**2 + 45 * t1**4))
+        l = l0 + (ygk / (N1 * np.cos(f1))) * ((1 - (ygk**2 / (6 *N1**2)) * (1 + 2*t1**2 + eta21) + (ygk**4 / (120*N1**4)) * (5 + 28*t1**2 +24*t1**4 +6*eta21 + 8*eta21*t1**2)))
+        result = [f,l]
+        return result
+    
+    
+    
     
     def perform_transform(self, transform_type, input_file, output_file, format='2'):
         """
@@ -77,7 +210,7 @@ class Transformacje_wspolrzednych:
         with open(input_file, 'r') as file:
             found_start = False
             for line in file:
-                if line.startswith('# -----------------------------------------------------'):
+                if line.startswith('#'):
                     found_start = True
                     continue
                 if not found_start:
@@ -137,12 +270,12 @@ class Transformacje_wspolrzednych:
                            else:
                                lam_str = f"{int(lam_deg):02d}°{int(lam_min):02d}'{lam_sec:.5f}\""
                            h_str = f"{h:.3f}"
-                           file.write("{:<15}{:<15}{:<15}\n".format(phi_str, lam_str, h_str))
+                           file.write("{:<20}{:<20}{:<20}\n".format(phi_str, lam_str, h_str))
                        elif format_choice == '1':  # degrees_decimal
                            phi_str = f"{phi:.8f}"
                            lam_str = f"{lam:.8f}"
                            h_str = f"{h:.8f}"
-                           file.write("{:<15}{:<15}{:<15}\n".format(phi_str, lam_str, h_str))
+                           file.write("{:<20}{:<20}{:<20}\n".format(phi_str, lam_str, h_str))
 
                        
 
