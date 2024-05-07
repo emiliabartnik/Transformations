@@ -199,6 +199,27 @@ class Transformacje_wspolrzednych:
         return result
     
     
+    def xyz2neu (self, x,y,z, x0,y0,z0, format = '8'):
+        phi, lam, _ = [radians(coord) for coord in  self.xyz2plh(x0,y0,z0)]
+        R = np.array([[-np.sin(phi)*np.cos(lam), -np.sin(lam), np.cos(phi)*np.cos(lam)],
+                      [-np.sin(phi)*np.sin(lam), np.cos(lam), np.cos(phi)*np.sin(lam)],
+                      [np.cos(phi), 0, np.sin(phi)]])
+        xyz_t = np.array([[x-x0],
+                         [y-y0],
+                         [z-z0]])
+        [[E],[N],[U]] = R.T @ xyz_t
+        return N , E, U 
+    
+    
+    def neu2XYZ(self, N,E,U, x0, y0, z0, format = '9'):
+         phi, lam, _ = [radians(coord) for coord in  self.xyz2plh(x0,y0,z0)]
+         R = np.array([[-np.sin(phi)*np.cos(lam), -np.sin(lam), np.cos(phi)*np.cos(lam)],
+                       [-np.sin(phi)*np.sin(lam), np.cos(lam), np.cos(phi)*np.sin(lam)],
+                       [np.cos(phi), 0, np.sin(phi)]])
+         dx = np.array([n, e, u])
+         X,Y, Z = R @ dx
+         return X, Y, Z
+    
     
     
     def perform_transform(self, transform_type, input_file, output_file, format='2'):
@@ -230,6 +251,10 @@ class Transformacje_wspolrzednych:
                     result = self.bl2PL2000(data)   
                 elif transform_type == '6':
                     result = self.PL2000tobl(data)
+                elif transform_type == '7':
+                    result = self.xyz2neu(data)
+                elif transform_type == '8':
+                    result = self.neu2XYZ(data)
                 else:
                     print("Niepoprawny typ transformacji.")
                     return
@@ -316,7 +341,7 @@ if __name__ =="__main__":
     geo = Transformacje_wspolrzednych()
     
     model = input('wybierz model: 1 - wgs84 / 2 - grs80 / 3 - Krasowski: ')
-    transform_type = input('Wybierz transformację (1 - xyz2blh, 2 - blh2xyz, 3 - bl2PL1992, 4 - PL1992tobl, 5 - bl2PL2000, 6 - PL2000tobl): ')
+    transform_type = input('Wybierz transformację (1 - xyz2blh, 2 - blh2xyz, 3 - bl2PL1992, 4 - PL1992tobl, 5 - bl2PL2000, 6 - PL2000tobl, 7 - xyz2neu, 8 - neu2XYZ): ')
     input_file = input('Podaj nazwę pliku ze współrzędnymi: ')
     output_file = input('Podaj nazwę pliku pod jakim chcesz zapisać transformowane współrzędne: ')
     format_choice = input('Wybierz format wyników (1 - degrees_decimal, 2 - dms, 3 - XYZ, ): ')
