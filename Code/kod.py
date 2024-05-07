@@ -5,7 +5,7 @@ Created on Sun Apr 21 18:49:52 2024
 @author: weron
 """
 import numpy as np
-from math import *
+
 
 class Transformacje_wspolrzednych:
     def __init__(self, model: str = "1"):
@@ -28,7 +28,7 @@ class Transformacje_wspolrzednych:
         
 
     
-    def xyz2blh(self, xyz, format = '1'):
+    def xyz2blh(self, xyz, forma = '1'):
         X,Y,Z = xyz
         p = np.sqrt(X**2 + Y**2)
         lam = np.arctan2(Y,X)
@@ -41,11 +41,11 @@ class Transformacje_wspolrzednych:
             if abs(phi - phi_poprzednie) < (0.000001/206265):
              break
          
-        if format == '1':
+        if forma == '1':
              phi = np.degrees(phi)
              lam = np.degrees(lam)
       
-        elif format == '2':
+        elif forma == '2':
           phi_deg = np.degrees(phi)
           phi_min, phi_sec = divmod(phi_deg * 3600, 60)
           phi = (int(phi_min), int(phi_sec))
@@ -57,7 +57,7 @@ class Transformacje_wspolrzednych:
         result = [phi, lam, h]
         return result
     
-    def blh2xyz(self, plh, format = '3'):
+    def blh2xyz(self, plh, forma = '3'):
         phi, lam, h = plh
         N = self.a / np.sqrt(1 - self.e2 * np.sin(phi)**2)
         X = (N + h) * np.cos(phi) * np.cos(lam)
@@ -83,85 +83,96 @@ class Transformacje_wspolrzednych:
         M = (self.a * (1 - self.e2)) / np.sqrt((1 - self.e2 * np.sin(f)**2)**3)
         return(M)
     
-    def bl2PL1992(self, plh, format = '4'):
+    def bl2PL1992(self, plh, forma = '4'):
         m1992 = 0.9993
         lam0 = np.deg2rad(19)
         phi,lam,h = plh
         b2 = self.a**2 * (1-self.e2)
         e22 = (self.a**2 - b2) / b2
         dl = lam - lam0
-        t = tan(f)
-        eta2 = e22 * (cos(f))**2
+        t = np.tan(phi)
+        eta2 = e22 * (np.cos(phi))**2
         N = self.Np(phi)
-        si = self.sigma(f)
+        si = self.sigma(phi)
         xgk = si + (dl**2/2) * N * np.sin(phi) * np.cos(phi) * ((1 + (dl**2/12)*(np.cos(phi))**2 * (5 -t**2 +9*eta2 + 4*eta2**2) + (dl**4/360) * np.cos(phi)**4 * (61 - 58 * t**2 + t**4 + 270*eta2 - 330 * eta2 * t**2)))
-        ygk = dl * N * np.cos(phi) * (1 + (dl**2/6) * np.cos(phi)**2 * (1 - t**2 + eta2) + (dl**4/120) * cos(phi)**4 * (5 - 18*t**2 + t**4 + 14*eta2 - 58*eta2*t**2))
+        ygk = dl * N * np.cos(phi) * (1 + (dl**2/6) * np.cos(phi)**2 * (1 - t**2 + eta2) + (dl**4/120) * np.cos(phi)**4 * (5 - 18*t**2 + t**4 + 14*eta2 - 58*eta2*t**2))
         x1992 = xgk * m1992 - 5300000
         y1992 = ygk * m1992 + 500000
         result = [x1992, y1992]
         return result
         
         
-    def PL1992tobl(self,x92y92, format = '5'):
+    def PL1992tobl(self, x92y92, forma='5'):
         x92, y92 = x92y92
         m1992 = 0.9993
-        xgk = (x92 +5300000) / m1992
-        ygk = (y92 -500000) / m1992
-        
+        l0 = np.deg2rad(19)
+        xgk = (x92 + 5300000) / m1992
+        ygk = (y92 - 500000) / m1992
+    
         A0 = 1 - self.e2/4 - 3*self.e2**2/64 - 5*self.e2**3/256
-        f1 = xgk / (self.a * A0)
+        phi1 = xgk / (self.a * A0)
         while True:
-            fs = f1
-            s = self.sigma(f1)
-            f1 = f1 + (xgk - s)/(self.a * A0)
-            if abs(f1 - fs) < (0.000001/206265):
+            phis = phi1
+            s = self.sigma(phi1)
+            phi1 = phi1 + (xgk - s)/(self.a * A0)
+            if abs(phi1 - phis) < (0.000001/206265):
                 break
-        return(f1)
-        
+    
         b2 = self.a**2 * (1-self.e2)
         e22 = (self.a**2 - b2) / b2
-        M1 = self.Mp(f1) 
-        N1 = self.Np(f1)
-        t1 = tan(f1)
-        eta21 = e22 * (cos(f1))**2 
-        phi = f1 - (ygk**2 * t1 / (2*M1*N1)) * (1-(ygk**2/(12*N1**2)) * (5 + 3 * t1**2 + eta21 - 9 * eta21 * t1**2 - 4 * eta21**2) + (ygk**4/(360 * N1**4)) * (61 + 90 * t1**2 + 45 * t1**4))
-        lam = l0 + (ygk / (N1 * np.cos(f1))) * ((1 - (ygk**2 / (6 *N1**2)) * (1 + 2*t1**2 + eta21) + (ygk**4 / (120*N1**4)) * (5 + 28*t1**2 +24*t1**4 +6*eta21 + 8*eta21*t1**2)))
-        result = [phi,lam]
+        M1 = self.Mp(phi1) 
+        N1 = self.Np(phi1)
+        t1 = np.tan(phi1)
+        eta21 = e22 * (np.cos(phi1))**2 
+        phi = phi1 - (ygk**2 * t1 / (2*M1*N1)) * (1-(ygk**2/(12*N1**2)) * (5 + 3 * t1**2 + eta21 - 9 * eta21 * t1**2 - 4 * eta21**2) + (ygk**4/(360 * N1**4)) * (61 + 90 * t1**2 + 45 * t1**4))
+        lam = l0 + (ygk / (N1 * np.cos(phi1))) * ((1 - (ygk**2 / (6 *N1**2)) * (1 + 2*t1**2 + eta21) + (ygk**4 / (120*N1**4)) * (5 + 28*t1**2 +24*t1**4 +6*eta21 + 8*eta21*t1**2)))
+        result = [phi, lam]
         return result
     
-    def bl2PL2000(self, plh, format = '6'):
-        m2000=0.999923
+
+
+    def bl2PL2000(self, plh, format='6'):
+        m2000 = 0.999923
         phi, lam, h = plh
-        if lam >=np.deg2rad(13.5) and lam <= np.deg2rad(16.5):
-            strefa = 5
-            lam0 = np.deg2rad(15)
-        elif lam >np.deg2rad(16.5) and lam <= np.deg2rad(19.5):
-            strefa = 6
-            lam0 = np.deg2rad(18)
-        elif lam >np.deg2rad(19.5) and lam <= np.deg2rad(22.5):
-            strefa =7
-            lam0 = np.deg2rad(21)
-        elif lam >np.deg2rad(22.5) and lam <= np.deg2rad(25.5):
-            strefa = 8
-            lam0 = np.deg2rad(24)
-        b2 = self.a**2 * (1-self.e2)
-        e22 = (self.a**2 - b2) / b2
-        dl = lam - lam0
-        t = tan(f)
-        eta2 = e22 * (cos(f))**2
-        N = self.Np(phi)
-        si = self.sigma(phi)
-        xgk = si + (dl**2/2) * N * np.sin(f) * np.cos(f) * ((1 + (dl**2/12)*(np.cos(f))**2 * (5 -t**2 +9*eta2 + 4*eta2**2) + (dl**4/360) * np.cos(f)**4 * (61 - 58 * t**2 + t**4 + 270*eta2 - 330 * eta2 * t**2)))
-        ygk = dl * N * np.cos(f) * (1 + (dl**2/6) * np.cos(f)**2 * (1 - t**2 + eta2) + (dl**4/120) * cos(f)**4 * (5 - 18*t**2 + t**4 + 14*eta2 - 58*eta2*t**2))
-        x2000 = xgk * m2000
-        y2000 = ygk * m2000 + strefa * 1000000 + 500000
-        result = [x2000, y2000]
-        return result
+        try:
+            if lam >= np.deg2rad(13.5) and lam <= np.deg2rad(16.5):
+                strefa = 5
+                lam0 = np.deg2rad(15)
+            elif lam > np.deg2rad(16.5) and lam <= np.deg2rad(19.5):
+                strefa = 6
+                lam0 = np.deg2rad(18)
+            elif lam > np.deg2rad(19.5) and lam <= np.deg2rad(22.5):
+                strefa = 7
+                lam0 = np.deg2rad(21)
+            elif lam > np.deg2rad(22.5) and lam <= np.deg2rad(25.5):
+                strefa = 8
+                lam0 = np.deg2rad(24)
+            else:
+                raise ValueError("Niepoprawna wartość lam")
+        
+            b2 = self.a**2 * (1 - self.e2)
+            e22 = (self.a**2 - b2) / b2
+            dl = lam - lam0
+            t = np.tan(phi)
+            eta2 = e22 * (np.cos(phi))**2
+            N = self.Np(phi)
+            si = self.sigma(phi)
+            xgk = si + (dl**2/2) * N * np.sin(phi) * np.cos(phi) * ((1 + (dl**2/12) * (np.cos(phi))**2 * (5 - t**2 + 9*eta2 + 4*eta2**2) + (dl**4/360) * np.cos(phi)**4 * (61 - 58 * t**2 + t**4 + 270*eta2 - 330 * eta2 * t**2)))
+            ygk = dl * N * np.cos(phi) * (1 + (dl**2/6) * np.cos(phi)**2 * (1 - t**2 + eta2) + (dl**4/120) * np.cos(phi)**4 * (5 - 18*t**2 + t**4 + 14*eta2 - 58*eta2*t**2))
+            x2000 = xgk * m2000
+            y2000 = ygk * m2000 + strefa * 1000000 + 500000
+            result = [x2000, y2000]
+            return result
+        except ValueError as e:
+            print(e)
+            return None
+
     
     
-    def PL2000tobl(self,x2000y2000, format = '7'):
+    def PL2000tobl(self,x2000y2000, forma = '7'):
         m2000 = 0.999923
         x2000, y2000 = x2000y2000
+        l0 = np.deg2rad(19)
         for i in y2000:
             if str(i).startswith('7'):
                 nr = 7
@@ -178,28 +189,28 @@ class Transformacje_wspolrzednych:
         ygk = (y2000 - nr * 1000000 - 500000) / m2000
         
         A0 = 1 - self.e2/4 - 3*self.e2**2/64 - 5*self.e2**3/256
-        f1 = xgk / (self.a * A0)
+        phi1 = xgk / (self.a * A0)
         while True:
-            fs = f1
-            s = self.sigma(f1)
-            f1 = f1 + (xgk - s)/(self.a * A0)
-            if abs(f1 - fs) < (0.000001/206265):
+            phis = phi1
+            s = self.sigma(phi1)
+            phi1 = phi1 + (xgk - s)/(self.a * A0)
+            if abs(phi1 - phis) < (0.000001/206265):
                 break
-        return(f1)
+        return(phi1)
         
         b2 = self.a**2 * (1-self.e2)
         e22 = (self.a**2 - b2) / b2
-        M1 = self.Mp(f1) 
-        N1 = self.Np(f1)
-        t1 = tan(f1)
-        eta21 = e22 * (cos(f1))**2 
-        phi = f1 - (ygk**2 * t1 / (2*M1*N1)) * (1-(ygk**2/(12*N1**2)) * (5 + 3 * t1**2 + eta21 - 9 * eta21 * t1**2 - 4 * eta21**2) + (ygk**4/(360 * N1**4)) * (61 + 90 * t1**2 + 45 * t1**4))
-        lam = l0 + (ygk / (N1 * np.cos(f1))) * ((1 - (ygk**2 / (6 *N1**2)) * (1 + 2*t1**2 + eta21) + (ygk**4 / (120*N1**4)) * (5 + 28*t1**2 +24*t1**4 +6*eta21 + 8*eta21*t1**2)))
+        M1 = self.Mp(phi1) 
+        N1 = self.Np(phi1)
+        t1 = np.tan(phi1)
+        eta21 = e22 * (np.cos(phi1))**2 
+        phi = phi1 - (ygk**2 * t1 / (2*M1*N1)) * (1-(ygk**2/(12*N1**2)) * (5 + 3 * t1**2 + eta21 - 9 * eta21 * t1**2 - 4 * eta21**2) + (ygk**4/(360 * N1**4)) * (61 + 90 * t1**2 + 45 * t1**4))
+        lam = l0 + (ygk / (N1 * np.cos(phi1))) * ((1 - (ygk**2 / (6 *N1**2)) * (1 + 2*t1**2 + eta21) + (ygk**4 / (120*N1**4)) * (5 + 28*t1**2 +24*t1**4 +6*eta21 + 8*eta21*t1**2)))
         result = [phi,lam]
         return result
     
     
-    def xyz2neu (self, x,y,z, x0,y0,z0, format = '8'):
+    def xyz2neu (self, x,y,z, x0,y0,z0, forma = '8'):
         phi, lam, _ = [radians(coord) for coord in  self.xyz2plh(x0,y0,z0)]
         R = np.array([[-np.sin(phi)*np.cos(lam), -np.sin(lam), np.cos(phi)*np.cos(lam)],
                       [-np.sin(phi)*np.sin(lam), np.cos(lam), np.cos(phi)*np.sin(lam)],
@@ -208,21 +219,23 @@ class Transformacje_wspolrzednych:
                          [y-y0],
                          [z-z0]])
         [[E],[N],[U]] = R.T @ xyz_t
-        return N , E, U 
+        result = [N, E, U]
+        return result
     
     
-    def neu2XYZ(self, N,E,U, x0, y0, z0, format = '9'):
+    def neu2XYZ(self, N,E,U, x0, y0, z0, forma = '9'):
          phi, lam, _ = [radians(coord) for coord in  self.xyz2plh(x0,y0,z0)]
          R = np.array([[-np.sin(phi)*np.cos(lam), -np.sin(lam), np.cos(phi)*np.cos(lam)],
                        [-np.sin(phi)*np.sin(lam), np.cos(lam), np.cos(phi)*np.sin(lam)],
                        [np.cos(phi), 0, np.sin(phi)]])
          dx = np.array([n, e, u])
          X,Y, Z = R @ dx
-         return X, Y, Z
+         result = [X, Y, Z]
+         return result
     
     
     
-    def perform_transform(self, transform_type, input_file, output_file, format='2'):
+    def perform_transform(self, transform_type, input_file, output_file, format_choice):
         """
         Wykonuje wybraną transformację na danych z pliku wejściowego i zapisuje wyniki do pliku wyjściowego.
         transform_type: Typ transformacji ('xyz2blh', 'blh2xyz', 'xyz2neu', 'neu2xyz')
@@ -263,76 +276,77 @@ class Transformacje_wspolrzednych:
                 
 
             with open(output_file, 'a') as file:
-                # Nagłówek dla każdej funkcji
                 file.write("\nWyniki transformacji:\n")
-
+            
                 if format_choice == '3':  # blh2xyz
-                    # Nagłówek "b l h" w odpowiednich kolumnach
                     file.write("{:>6}{:>15}{:>17}\n".format("X [m]", "Y [m]", "Z [m]"))
+                    for result in results:
+                        X_str = f"{result[0]:.3f}"
+                        Y_str = f"{result[1]:.3f}"
+                        Z_str = f"{result[2]:.3f}"
+                        file.write("{:<15}, {:<15}, {:<15}\n".format(X_str, Y_str, Z_str))
                 elif format_choice == '2' or format_choice == '1':  # xyz2blh lub inne transformacje
-                    # Nagłówek "b l h" w odpowiednich kolumnach
                     file.write("{:>6}{:>15}{:>17}\n".format("b", "l", "h"))
+                    for result in results:
+                        phi, lam, h = result
+                        if format_choice == '2':  # dms
+                            phi_deg, phi_rem = divmod(abs(phi), 1)
+                            phi_min, phi_sec = divmod(phi_rem * 60, 1)
+                            phi_sec *= 60
+                            if phi < 0:
+                                phi_str = f"-{int(phi_deg):02d}°{int(phi_min):02d}'{phi_sec:.5f}\""
+                            else:
+                                phi_str = f"{int(phi_deg):02d}°{int(phi_min):02d}'{phi_sec:.5f}\""
+            
+                            lam_deg, lam_rem = divmod(abs(lam), 1)
+                            lam_min, lam_sec = divmod(lam_rem * 60, 1)
+                            lam_sec *= 60
+                            if lam < 0:
+                                lam_str = f"-{int(lam_deg):02d}°{int(lam_min):02d}'{lam_sec:.5f}\""
+                            else:
+                                lam_str = f"{int(lam_deg):02d}°{int(lam_min):02d}'{lam_sec:.5f}\""
+                            h_str = f"{h:.3f}"
+                            file.write("{:<20}{:<20}{:<20}\n".format(phi_str, lam_str, h_str))
+                        elif format_choice == '1':  # degrees_decimal
+                            phi_str = f"{phi:.8f}"
+                            lam_str = f"{lam:.8f}"
+                            h_str = f"{h:.8f}"
+                            file.write("{:<20}{:<20}{:<20}\n".format(phi_str, lam_str, h_str))
+            
+                
+                
                 elif format_choice == '4' or format_choice == '6':
                     file.write("{:>6}{:>15}\n".format("X [m]", "Y [m]"))
+                    for result in results:
+                        if result is not None:
+                            X_str = f"{result[0]:.3f}"
+                            Y_str = f"{result[1]:.3f}"
+                            file.write("{:<15}, {:<15}\n".format(X_str, Y_str))
+                        else:
+                            file.write("Error: Result is None\n")
+                        
+                         
+
                 elif format_choice == '5' or format_choice == '7':
                     file.write("{:>6}{:>15}\n".format("b", "l"))
-                
-
-    # Wyniki
-                for result in results:
-                   if format_choice == '3':  # xyz2blh
-                       X_str = f"{result[0]:.3f}"
-                       Y_str = f"{result[1]:.3f}"
-                       Z_str = f"{result[2]:.3f}"
-                       file.write("{:<15}, {:<15}, {:<15}\n".format(X_str, Y_str, Z_str))
-                   elif format_choice == '2' or format_choice == '1':  # xyz2blh lub inne transformacje
-                       phi, lam, h = result
-                       if format_choice == '2':  # dms
-                           phi_deg, phi_rem = divmod(abs(phi), 1)
-                           phi_min, phi_sec = divmod(phi_rem * 60, 1)
-                           phi_sec *= 60
-                           if phi < 0:
-                               phi_str = f"-{int(phi_deg):02d}°{int(phi_min):02d}'{phi_sec:.5f}\""
-                           else:
-                               phi_str = f"{int(phi_deg):02d}°{int(phi_min):02d}'{phi_sec:.5f}\""
-        
-                           lam_deg, lam_rem = divmod(abs(lam), 1)
-                           lam_min, lam_sec = divmod(lam_rem * 60, 1)
-                           lam_sec *= 60
-                           if lam < 0:
-                               lam_str = f"-{int(lam_deg):02d}°{int(lam_min):02d}'{lam_sec:.5f}\""
-                           else:
-                               lam_str = f"{int(lam_deg):02d}°{int(lam_min):02d}'{lam_sec:.5f}\""
-                           h_str = f"{h:.3f}"
-                           file.write("{:<20}{:<20}{:<20}\n".format(phi_str, lam_str, h_str))
-                       elif format_choice == '1':  # degrees_decimal
-                           phi_str = f"{phi:.8f}"
-                           lam_str = f"{lam:.8f}"
-                           h_str = f"{h:.8f}"
-                           file.write("{:<20}{:<20}{:<20}\n".format(phi_str, lam_str, h_str))
-                   elif format_choice == '4' or format_choice == '6':
-                       X_str = f"{result[0]:.3f}"
-                       Y_str = f"{result[1]:.3f}"
-                       file.write("{:<15}, {:<15}\n".format(X_str, Y_str))
-                   elif format_choice == '5' or format_choice == '7':
-                       phi, lam = result
-                       if format_choice == '2':  # dms
-                           phi_deg, phi_rem = divmod(abs(phi), 1)
-                           phi_min, phi_sec = divmod(phi_rem * 60, 1)
-                           phi_sec *= 60
-                           if phi < 0:
-                               phi_str = f"-{int(phi_deg):02d}°{int(phi_min):02d}'{phi_sec:.5f}\""
-                           else:
-                               phi_str = f"{int(phi_deg):02d}°{int(phi_min):02d}'{phi_sec:.5f}\""
-        
-                           lam_deg, lam_rem = divmod(abs(lam), 1)
-                           lam_min, lam_sec = divmod(lam_rem * 60, 1)
-                           lam_sec *= 60
-                           if lam < 0:
-                               lam_str = f"-{int(lam_deg):02d}°{int(lam_min):02d}'{lam_sec:.5f}\""
-                           else:
-                               lam_str = f"{int(lam_deg):02d}°{int(lam_min):02d}'{lam_sec:.5f}\""
-                           file.write("{:<20}{:<20}{:<20}\n".format(phi_str, lam_str))
+                    for result in results:
+                        phi, lam = result
+                        phi_deg, phi_rem = divmod(abs(phi), 1)
+                        phi_min, phi_sec = divmod(phi_rem * 60, 1)
+                        phi_sec *= 60
+                        if phi < 0:
+                            phi_str = f"-{int(phi_deg):02d}°{int(phi_min):02d}'{phi_sec:.5f}\""
+                        else:
+                            phi_str = f"{int(phi_deg):02d}°{int(phi_min):02d}'{phi_sec:.5f}\""
+                        
+                        lam_deg, lam_rem = divmod(abs(lam), 1)
+                        lam_min, lam_sec = divmod(lam_rem * 60, 1)
+                        lam_sec *= 60
+                        if lam < 0:
+                            lam_str = f"-{int(lam_deg):02d}°{int(lam_min):02d}'{lam_sec:.5f}\""
+                        else:
+                            lam_str = f"{int(lam_deg):02d}°{int(lam_min):02d}'{lam_sec:.5f}\""
+                        file.write("{:<20}{:<20}\n".format(phi_str, lam_str))
                        
 
     
@@ -346,7 +360,7 @@ if __name__ =="__main__":
     output_file = input('Podaj nazwę pliku pod jakim chcesz zapisać transformowane współrzędne: ')
     format_choice = input('Wybierz format wyników (1 - degrees_decimal, 2 - dms, 3 - XYZ, ): ')
     transformer = Transformacje_wspolrzednych(model)
-    transformer.perform_transform(transform_type,input_file, output_file)
+    transformer.perform_transform(transform_type,input_file, output_file, format_choice)
         
         
         
