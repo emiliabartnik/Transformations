@@ -256,8 +256,10 @@ class Transformacje_wspolrzednych:
 
     
     
-    def xyz2neu (self, x,y,z, x0,y0,z0, forma = '8'):
-        phi, lam, _ = [radians(coord) for coord in  self.xyz2plh(x0,y0,z0)]
+    def xyz2neu (self, xyz, x0,y0,z0, forma = '8'):
+        x, y, z = xyz
+        x0y0z0 = [x0, y0, z0]
+        phi, lam, h = self.xyz2blh(x0y0z0)
         R = np.array([[-np.sin(phi)*np.cos(lam), -np.sin(lam), np.cos(phi)*np.cos(lam)],
                       [-np.sin(phi)*np.sin(lam), np.cos(lam), np.cos(phi)*np.sin(lam)],
                       [np.cos(phi), 0, np.sin(phi)]])
@@ -269,19 +271,21 @@ class Transformacje_wspolrzednych:
         return result
     
     
-    def neu2XYZ(self, N,E,U, x0, y0, z0, forma = '9'):
-         phi, lam, _ = [radians(coord) for coord in  self.xyz2plh(x0,y0,z0)]
-         R = np.array([[-np.sin(phi)*np.cos(lam), -np.sin(lam), np.cos(phi)*np.cos(lam)],
-                       [-np.sin(phi)*np.sin(lam), np.cos(lam), np.cos(phi)*np.sin(lam)],
-                       [np.cos(phi), 0, np.sin(phi)]])
-         dx = np.array([n, e, u])
-         X,Y, Z = R @ dx
-         result = [X, Y, Z]
-         return result
+    def neu2XYZ(self, NEU, x0, y0, z0, forma = '9'):
+        n, e, u = NEU
+        x0y0z0 = [x0, y0, z0]
+        phi, lam, h = self.xyz2blh(x0y0z0)
+        R = np.array([[-np.sin(phi)*np.cos(lam), -np.sin(lam), np.cos(phi)*np.cos(lam)],
+                      [-np.sin(phi)*np.sin(lam), np.cos(lam), np.cos(phi)*np.sin(lam)],
+                      [np.cos(phi), 0, np.sin(phi)]])
+        dx = np.array([n, e, u])
+        X,Y, Z = R @ dx
+        result = [X, Y, Z]
+        return result
     
     
     
-    def perform_transform(self, transform_type, input_file, output_file, format_choice):
+    def perform_transform(self, transform_type, input_file, output_file, format_choice, x0 = 0, y0 = 0, z0 =0):
         """
         Wykonuje wybraną transformację na danych z pliku wejściowego i zapisuje wyniki do pliku wyjściowego.
         transform_type: Typ transformacji ('xyz2blh', 'blh2xyz', 'xyz2neu', 'neu2xyz')
@@ -311,9 +315,9 @@ class Transformacje_wspolrzednych:
                 elif transform_type == '6':
                     result = self.PL2000tobl(data)
                 elif transform_type == '7':
-                    result = self.xyz2neu(data)
+                    result = self.xyz2neu(data, x0, y0, z0)
                 elif transform_type == '8':
-                    result = self.neu2XYZ(data)
+                    result = self.neu2XYZ(data, x0, y0, z0)
                 else:
                     print("Niepoprawny typ transformacji.")
                     return
@@ -421,6 +425,15 @@ class Transformacje_wspolrzednych:
                             file.write("{:<20}{:<20}\n".format(phi_str, lam_str))
                         else:
                             file.write("Błąd współrzędnych\n")
+                            
+                            
+                if format_choice == '8':  
+                    file.write("{:>6}{:>15}{:>17}\n".format("n", "e", "u"))
+                    for result in results:
+                        if format_choice == '8':
+                            N_str, E_str, U_str = result
+                            file.write("{:<20}{:<20}{:<20}\n".format(N_str, E_str, U_str))
+                
 
     
 if __name__ =="__main__":
@@ -432,11 +445,17 @@ if __name__ =="__main__":
     input_file = input('Podaj nazwę pliku ze współrzędnymi: ')
     output_file = input('Podaj nazwę pliku pod jakim chcesz zapisać transformowane współrzędne: ')
     format_choice = input('Wybierz format wyników (1 - degrees_decimal, 2 - dms, 3 - XYZ, ): ')
+    
     transformer = Transformacje_wspolrzednych(model)
-    transformer.perform_transform(transform_type,input_file, output_file, format_choice)
-        
-        
-        
+    if transform_type in ['7', '8']:
+        x0 = float(input('Podaj wartość x0: '))
+        y0 = float(input('Podaj wartość y0: '))
+        z0 = float(input('Podaj wartość z0: '))
+    # Wywołanie metody perform_transform z podanymi argumentami
+        transformer.perform_transform(transform_type, input_file, output_file, format_choice, x0, y0, z0)
+    else:
+        # Wywołanie metody perform_transform bez dodatkowych argumentów
+        transformer.perform_transform(transform_type, input_file, output_file, format_choice)   
         
     
    
