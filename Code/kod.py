@@ -131,7 +131,7 @@ class Transformacje_wspolrzednych:
     
 
 
-    def bl2PL2000(self, plh, forma='6'):
+    def bl2PL2000(self, plh, forma ='6'):
         m2000 = 0.999923
         phi, lam, h = plh
         try:
@@ -166,13 +166,13 @@ class Transformacje_wspolrzednych:
         except ValueError as e:
             print(e)
             return None
-
+    
     
     def PL2000tobl(self, x2000y2000, forma='5'):
         m2000 = 0.999923
         x2000, y2000 = x2000y2000
         l0 = np.deg2rad(19)
-    
+
         # Znalezienie strefy na podstawie y2000
         if str(y2000).startswith('7'):
             nr = 7
@@ -185,33 +185,36 @@ class Transformacje_wspolrzednych:
         else:
             print("Nie można określić strefy")
             return None  # Jeśli nie można określić strefy, zwracamy None lub podejmujemy odpowiednie działania w zależności od potrzeb
-    
-    
-        xgk = x2000 / m2000
-        ygk = (y2000 - nr * 1000000 - 500000) / m2000
-    
-        A0 = 1 - self.e2/4 - 3*self.e2**2/64 - 5*self.e2**3/256
-        phi1 = xgk / (self.a * A0)
-    
-        while True:
-            phis = phi1
-            s = self.sigma(phi1)
-            phi1 = phi1 + (xgk - s)/(self.a * A0)
-            if abs(phi1 - phis) < (0.000001/206265):
-                break
-    
-        b2 = self.a**2 * (1 - self.e2)
-        e22 = (self.a**2 - b2) / b2
-        M1 = self.Mp(phi1) 
-        N1 = self.Np(phi1)
-        t1 = np.tan(phi1)
-        eta21 = e22 * (np.cos(phi1))**2 
-    
-        phi = phi1 - (ygk**2 * t1 / (2*M1*N1)) * (1-(ygk**2/(12*N1**2)) * (5 + 3 * t1**2 + eta21 - 9 * eta21 * t1**2 - 4 * eta21**2) + (ygk**4/(360 * N1**4)) * (61 + 90 * t1**2 + 45 * t1**4))
-        lam = l0 + (ygk / (N1 * np.cos(phi1))) * ((1 - (ygk**2 / (6 *N1**2)) * (1 + 2*t1**2 + eta21) + (ygk**4 / (120*N1**4)) * (5 + 28*t1**2 +24*t1**4 +6*eta21 + 8*eta21*t1**2)))
-    
-        result = [phi, lam]
-        return result
+
+        try:
+            xgk = x2000 / m2000
+            ygk = (y2000 - nr * 1000000 - 500000) / m2000
+            
+            A0 = 1 - self.e2/4 - 3*self.e2**2/64 - 5*self.e2**3/256
+            phi1 = xgk / (self.a * A0)
+
+            while True:
+                phis = phi1
+                s = self.sigma(phi1)
+                phi1 = phi1 + (xgk - s)/(self.a * A0)
+                if abs(phi1 - phis) < (0.000001/206265):
+                    break
+
+            b2 = self.a**2 * (1 - self.e2)
+            e22 = (self.a**2 - b2) / b2
+            M1 = self.Mp(phi1) 
+            N1 = self.Np(phi1)
+            t1 = np.tan(phi1)
+            eta21 = e22 * (np.cos(phi1))**2 
+
+            phi = phi1 - (ygk**2 * t1 / (2*M1*N1)) * (1-(ygk**2/(12*N1**2)) * (5 + 3 * t1**2 + eta21 - 9 * eta21 * t1**2 - 4 * eta21**2) + (ygk**4/(360 * N1**4)) * (61 + 90 * t1**2 + 45 * t1**4))
+            lam = l0 + (ygk / (N1 * np.cos(phi1))) * ((1 - (ygk**2 / (6 *N1**2)) * (1 + 2*t1**2 + eta21) + (ygk**4 / (120*N1**4)) * (5 + 28*t1**2 +24*t1**4 +6*eta21 + 8*eta21*t1**2)))
+
+            result = [phi, lam]
+            return result
+        except Exception as e:
+            print(f"Błąd w funkcji PL2000tobl: {e}")
+            return None
 
     
     
@@ -288,100 +291,102 @@ class Transformacje_wspolrzednych:
                 file.write("\nWyniki transformacji:\n")
             
                 if format_choice == '3':  # blh2xyz
-                    file.write("{:>6}{:>15}{:>17}\n".format("X [m]", "Y [m]", "Z [m]"))
-                    file.write("#-----------------------------\n")
+                    file.write("{:>9}{:>15}{:>17}\n".format("X [m]", "Y [m]".rjust(17), "Z [m]".rjust(15)))
+                    header_written = False
                     for result in results:
+                        if not header_written:  # Sprawdzamy, czy nagłówek już został zapisany
+                            file.write("#-----------------------------\n")  # Zapisujemy nagłówek tylko raz
+                            header_written = True
                         X_str = f"{result[0]:.3f}"
-                        Y_str = f"{result[1]:.3f}"
-                        Z_str = f"{result[2]:.3f}"
-                        file.write("{:<15}, {:<15}, {:<15}\n".format(X_str, Y_str, Z_str))
-                        file.write("#-----------------------------\n")
+                        Y_str = f"{result[1]:.3f}".rjust(15)
+                        Z_str = f"{result[2]:.3f}".rjust(15)
+                        file.write("{:<10}, {:<15}, {:<15}\n".format(X_str, Y_str, Z_str))
+                        
                 elif format_choice == '2' or format_choice == '1':  # xyz2blh lub inne transformacje
-                    file.write("{:>6}{:>15}{:>17}\n".format("b", "l", "h"))
-                    file.write("#-----------------------------\n")
+                    file.write("{:>9}{:>15}{:>17}\n".format("b", "l".rjust(20), "h".rjust(15)))
+                    header_written = False 
                     for result in results:
+                        if not header_written:  # Sprawdzamy, czy nagłówek już został zapisany
+                            file.write("#------------------------------------------------\n")  # Zapisujemy nagłówek tylko raz
+                            header_written = True
                         phi, lam, h = result
                         if format_choice == '2':  # dms
                             phi_deg, phi_rem = divmod(abs(phi), 1)
                             phi_min, phi_sec = divmod(phi_rem * 60, 1)
                             phi_sec *= 60
                             if phi < 0:
-                                phi_str = f"-{int(phi_deg):02d}°{int(phi_min):02d}'{phi_sec:.5f}\""
+                                phi_str = f"-{int(phi_deg):02d}°{int(phi_min):02d}'{phi_sec:.5f}\"".rjust(10)
                             else:
-                                phi_str = f"{int(phi_deg):02d}°{int(phi_min):02d}'{phi_sec:.5f}\""
+                                phi_str = f"{int(phi_deg):02d}°{int(phi_min):02d}'{phi_sec:.5f}\"".rjust(10)
             
                             lam_deg, lam_rem = divmod(abs(lam), 1)
                             lam_min, lam_sec = divmod(lam_rem * 60, 1)
                             lam_sec *= 60
                             if lam < 0:
-                                lam_str = f"-{int(lam_deg):02d}°{int(lam_min):02d}'{lam_sec:.5f}\""
+                                lam_str = f"-{int(lam_deg):02d}°{int(lam_min):02d}'{lam_sec:.5f}\"".rjust(20)
                             else:
-                                lam_str = f"{int(lam_deg):02d}°{int(lam_min):02d}'{lam_sec:.5f}\""
-                            h_str = f"{h:.3f}"
-                            file.write("{:<20}{:<20}{:<20}\n".format(phi_str, lam_str, h_str))
-                            file.write("#-----------------------------\n")
+                                lam_str = f"{int(lam_deg):02d}°{int(lam_min):02d}'{lam_sec:.5f}\"".rjust(20)
+                            h_str = f"{h:.3f}".rjust(12)
+                            file.write("{:<10},{:<10},{:<10}\n".format(phi_str, lam_str, h_str))
                         elif format_choice == '1':  # degrees_decimal
                             phi_str = f"{phi:.8f}"
-                            lam_str = f"{lam:.8f}"
-                            h_str = f"{h:.8f}"
-                            file.write("{:<20}{:<20}{:<20}\n".format(phi_str, lam_str, h_str))
-                            file.write("#-----------------------------\n")
-            
-                
+                            lam_str = f"{lam:.8f}".rjust(20)
+                            h_str = f"{h:.8f}".rjust(12)
+                            file.write("{:<10},{:<10},{:<10}\n".format(phi_str, lam_str, h_str))
+                            
+        
                 
                 elif format_choice == '4' or format_choice == '6':
-                    file.write("{:>6}{:>15}\n".format("X [m]", "Y [m]"))
-                    file.write("#-----------------------------\n")
+                    file.write("{:>6}{:>15}\n".format("X [m]", "Y [m]".rjust(15)))
+                    header_written = False
                     for result in results:
+                        if not header_written:  # Sprawdzamy, czy nagłówek już został zapisany
+                            file.write("#-----------------------------\n")  # Zapisujemy nagłówek tylko raz
+                            header_written = True
                         if result is not None:
                             X_str = f"{result[0]:.3f}"
-                            Y_str = f"{result[1]:.3f}"
-                            file.write("{:<15}, {:<15}\n".format(X_str, Y_str))
+                            Y_str = f"{result[1]:.3f}".rjust(15)
+                            file.write("{:<10}, {:<15}\n".format(X_str, Y_str))
                         else:
                             file.write("Error: Result is None\n")
                         
-                       
+                
                 elif format_choice == '5' or format_choice == '7':  # xyz2blh lub inne transformacje
-                    file.write("{:>6}{:>15}\n".format("b", "l"))
-                    file.write("#-----------------------------\n")
+                    file.write("{:>12}{:>15}\n".format("b", "l".rjust(20)))
+                    header_written = False  # Zmienna do śledzenia, czy nagłówek został już zapisany
                     for result in results:
-                        if results is not None:
+                        if not header_written:  # Sprawdzamy, czy nagłówek już został zapisany
+                            file.write("#-----------------------------\n")  # Zapisujemy nagłówek tylko raz
+                            header_written = True
+                        if result is not None:
                             phi, lam = result
                             if format_choice == '5':  # dms
                                 phi_deg, phi_rem = divmod(abs(phi), 1)
                                 phi_min, phi_sec = divmod(phi_rem * 60, 1)
                                 phi_sec *= 60
                                 if phi < 0:
-                                    phi_str = f"-{int(phi_deg):02d}°{int(phi_min):02d}'{phi_sec:.5f}\""
+                                    phi_str = f"-{int(phi_deg):02d}°{int(phi_min):02d}'{phi_sec:.5f}\"".rjust(10)
                                 else:
-                                    phi_str = f"{int(phi_deg):02d}°{int(phi_min):02d}'{phi_sec:.5f}\""
-                
+                                    phi_str = f"{int(phi_deg):02d}°{int(phi_min):02d}'{phi_sec:.5f}\"".rjust(10)
+
                                 lam_deg, lam_rem = divmod(abs(lam), 1)
                                 lam_min, lam_sec = divmod(lam_rem * 60, 1)
                                 lam_sec *= 60
                                 if lam < 0:
-                                    lam_str = f"-{int(lam_deg):02d}°{int(lam_min):02d}'{lam_sec:.5f}\""
+                                    lam_str = f"-{int(lam_deg):02d}°{int(lam_min):02d}'{lam_sec:.5f}\"".rjust(20)
                                 else:
-                                    lam_str = f"{int(lam_deg):02d}°{int(lam_min):02d}'{lam_sec:.5f}\""
-                                file.write("{:<20}{:<20}\n".format(phi_str, lam_str))
+                                    lam_str = f"{int(lam_deg):02d}°{int(lam_min):02d}'{lam_sec:.5f}\"".rjust(20)
+                                file.write("{:<15},{:<15}\n".format(phi_str, lam_str))
                             elif format_choice == '7':  # degrees_decimal
                                 phi_str = f"{phi:.8f}"
-                                lam_str = f"{lam:.8f}"
-                                file.write("{:<20}{:<20}\n".format(phi_str, lam_str))
-                                file.write("#-----------------------------\n")
-                        else:
-                            file.write("Błąd współrzędnych")
-                 
-                            
-                if format_choice == '8':  
-                    file.write("{:>6}{:>15}{:>17}\n".format("n", "e", "u"))
-                    file.write("#-----------------------------\n")
-                    for result in results:
-                        if format_choice == '8':
-                            N_str, E_str, U_str = result
-                            file.write("{:<20}{:<20}{:<20}\n".format(N_str, E_str, U_str))
-                            file.write("#-----------------------------\n")
+                                lam_str = f"{lam:.8f}".rjust(15)
+                                file.write("{:<15},{:<15}\n".format(phi_str, lam_str))
+                    if not header_written:  # Sprawdzamy, czy nagłówek został już zapisany
+                        file.write("#-----------------------------\n")  # Jeśli nie został zapisany, zapisujemy go teraz
+
                 
+
+                       
 
     
 if __name__ =="__main__":
