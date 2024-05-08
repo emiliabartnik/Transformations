@@ -168,48 +168,7 @@ class Transformacje_wspolrzednych:
             return None
 
     
-    
-    # def PL2000tobl(self,x2000y2000, forma = '7'):
-    #     m2000 = 0.999923
-    #     x2000, y2000 = x2000y2000
-    #     l0 = np.deg2rad(19)
-    #     for i in y2000:
-    #         if str(i).startswith('7'):
-    #             nr = 7
-    #         elif str(i).startswith('6'):
-    #             nr = 6
-    #         elif str(i).startswith('8'):
-    #             nr = 8
-    #         elif str(i).startswith('5'):
-    #             nr = 5
-    #         else:
-    #             print("Nie można określić strefy")
-            
-    #     xgk = x2000 / m2000
-    #     ygk = (y2000 - nr * 1000000 - 500000) / m2000
-        
-    #     A0 = 1 - self.e2/4 - 3*self.e2**2/64 - 5*self.e2**3/256
-    #     phi1 = xgk / (self.a * A0)
-    #     while True:
-    #         phis = phi1
-    #         s = self.sigma(phi1)
-    #         phi1 = phi1 + (xgk - s)/(self.a * A0)
-    #         if abs(phi1 - phis) < (0.000001/206265):
-    #             break
-    #     return(phi1)
-        
-    #     b2 = self.a**2 * (1-self.e2)
-    #     e22 = (self.a**2 - b2) / b2
-    #     M1 = self.Mp(phi1) 
-    #     N1 = self.Np(phi1)
-    #     t1 = np.tan(phi1)
-    #     eta21 = e22 * (np.cos(phi1))**2 
-    #     phi = phi1 - (ygk**2 * t1 / (2*M1*N1)) * (1-(ygk**2/(12*N1**2)) * (5 + 3 * t1**2 + eta21 - 9 * eta21 * t1**2 - 4 * eta21**2) + (ygk**4/(360 * N1**4)) * (61 + 90 * t1**2 + 45 * t1**4))
-    #     lam = l0 + (ygk / (N1 * np.cos(phi1))) * ((1 - (ygk**2 / (6 *N1**2)) * (1 + 2*t1**2 + eta21) + (ygk**4 / (120*N1**4)) * (5 + 28*t1**2 +24*t1**4 +6*eta21 + 8*eta21*t1**2)))
-    #     result = [phi,lam]
-    #     return result
-    
-    def PL2000tobl(self, x2000y2000, forma='7'):
+    def PL2000tobl(self, x2000y2000, forma='5'):
         m2000 = 0.999923
         x2000, y2000 = x2000y2000
         l0 = np.deg2rad(19)
@@ -271,7 +230,7 @@ class Transformacje_wspolrzednych:
         return result
     
     
-    def neu2XYZ(self, NEU, x0, y0, z0, forma = '9'):
+    def neu2XYZ(self, NEU, x0, y0, z0, forma = '3'):
         n, e, u = NEU
         x0y0z0 = [x0, y0, z0]
         phi, lam, h = self.xyz2blh(x0y0z0)
@@ -330,13 +289,16 @@ class Transformacje_wspolrzednych:
             
                 if format_choice == '3':  # blh2xyz
                     file.write("{:>6}{:>15}{:>17}\n".format("X [m]", "Y [m]", "Z [m]"))
+                    file.write("#-----------------------------\n")
                     for result in results:
                         X_str = f"{result[0]:.3f}"
                         Y_str = f"{result[1]:.3f}"
                         Z_str = f"{result[2]:.3f}"
                         file.write("{:<15}, {:<15}, {:<15}\n".format(X_str, Y_str, Z_str))
+                        file.write("#-----------------------------\n")
                 elif format_choice == '2' or format_choice == '1':  # xyz2blh lub inne transformacje
                     file.write("{:>6}{:>15}{:>17}\n".format("b", "l", "h"))
+                    file.write("#-----------------------------\n")
                     for result in results:
                         phi, lam, h = result
                         if format_choice == '2':  # dms
@@ -357,16 +319,19 @@ class Transformacje_wspolrzednych:
                                 lam_str = f"{int(lam_deg):02d}°{int(lam_min):02d}'{lam_sec:.5f}\""
                             h_str = f"{h:.3f}"
                             file.write("{:<20}{:<20}{:<20}\n".format(phi_str, lam_str, h_str))
+                            file.write("#-----------------------------\n")
                         elif format_choice == '1':  # degrees_decimal
                             phi_str = f"{phi:.8f}"
                             lam_str = f"{lam:.8f}"
                             h_str = f"{h:.8f}"
                             file.write("{:<20}{:<20}{:<20}\n".format(phi_str, lam_str, h_str))
+                            file.write("#-----------------------------\n")
             
                 
                 
                 elif format_choice == '4' or format_choice == '6':
                     file.write("{:>6}{:>15}\n".format("X [m]", "Y [m]"))
+                    file.write("#-----------------------------\n")
                     for result in results:
                         if result is not None:
                             X_str = f"{result[0]:.3f}"
@@ -375,64 +340,47 @@ class Transformacje_wspolrzednych:
                         else:
                             file.write("Error: Result is None\n")
                         
-                         
-
-                elif format_choice == '5':
-                    file.write("{:>6}{:>15}\n".format("b", "l"))
-                    for result in results:
-                        phi, lam = result
-                        phi_deg, phi_rem = divmod(abs(phi), 1)
-                        phi_min, phi_sec = divmod(phi_rem * 60, 1)
-                        phi_sec *= 60
-                        if phi < 0:
-                            phi_str = f"-{int(phi_deg):02d}°{int(phi_min):02d}'{phi_sec:.5f}\""
-                        else:
-                            phi_str = f"{int(phi_deg):02d}°{int(phi_min):02d}'{phi_sec:.5f}\""
-                        
-                        lam_deg, lam_rem = divmod(abs(lam), 1)
-                        lam_min, lam_sec = divmod(lam_rem * 60, 1)
-                        lam_sec *= 60
-                        if lam < 0:
-                            lam_str = f"-{int(lam_deg):02d}°{int(lam_min):02d}'{lam_sec:.5f}\""
-                        else:
-                            lam_str = f"{int(lam_deg):02d}°{int(lam_min):02d}'{lam_sec:.5f}\""
-                        file.write("{:<20}{:<20}\n".format(phi_str, lam_str))
                        
-                
-                elif format_choice == '7':
+                elif format_choice == '5' or format_choice == '7':  # xyz2blh lub inne transformacje
                     file.write("{:>6}{:>15}\n".format("b", "l"))
+                    file.write("#-----------------------------\n")
                     for result in results:
-                        if result is not None:  # Sprawdzenie czy result nie jest None
+                        if results is not None:
                             phi, lam = result
-            
-                            # Konwersja na stopnie, minuty i sekundy
-                            phi_deg, phi_rem = divmod(abs(phi), 1)
-                            phi_min, phi_sec = divmod(phi_rem * 60, 1)
-                            phi_sec *= 60
-                            if phi < 0:
-                                phi_str = f"-{int(phi_deg):02d}°{int(phi_min):02d}'{phi_sec:.5f}\""
-                            else:
-                                phi_str = f"{int(phi_deg):02d}°{int(phi_min):02d}'{phi_sec:.5f}\""
-            
-                            lam_deg, lam_rem = divmod(abs(lam), 1)
-                            lam_min, lam_sec = divmod(lam_rem * 60, 1)
-                            lam_sec *= 60
-                            if lam < 0:
-                                lam_str = f"-{int(lam_deg):02d}°{int(lam_min):02d}'{lam_sec:.5f}\""
-                            else:
-                                lam_str = f"{int(lam_deg):02d}°{int(lam_min):02d}'{lam_sec:.5f}\""
-            
-                            file.write("{:<20}{:<20}\n".format(phi_str, lam_str))
+                            if format_choice == '5':  # dms
+                                phi_deg, phi_rem = divmod(abs(phi), 1)
+                                phi_min, phi_sec = divmod(phi_rem * 60, 1)
+                                phi_sec *= 60
+                                if phi < 0:
+                                    phi_str = f"-{int(phi_deg):02d}°{int(phi_min):02d}'{phi_sec:.5f}\""
+                                else:
+                                    phi_str = f"{int(phi_deg):02d}°{int(phi_min):02d}'{phi_sec:.5f}\""
+                
+                                lam_deg, lam_rem = divmod(abs(lam), 1)
+                                lam_min, lam_sec = divmod(lam_rem * 60, 1)
+                                lam_sec *= 60
+                                if lam < 0:
+                                    lam_str = f"-{int(lam_deg):02d}°{int(lam_min):02d}'{lam_sec:.5f}\""
+                                else:
+                                    lam_str = f"{int(lam_deg):02d}°{int(lam_min):02d}'{lam_sec:.5f}\""
+                                file.write("{:<20}{:<20}\n".format(phi_str, lam_str))
+                            elif format_choice == '7':  # degrees_decimal
+                                phi_str = f"{phi:.8f}"
+                                lam_str = f"{lam:.8f}"
+                                file.write("{:<20}{:<20}\n".format(phi_str, lam_str))
+                                file.write("#-----------------------------\n")
                         else:
-                            file.write("Błąd współrzędnych\n")
-                            
+                            file.write("Błąd współrzędnych")
+                 
                             
                 if format_choice == '8':  
                     file.write("{:>6}{:>15}{:>17}\n".format("n", "e", "u"))
+                    file.write("#-----------------------------\n")
                     for result in results:
                         if format_choice == '8':
                             N_str, E_str, U_str = result
                             file.write("{:<20}{:<20}{:<20}\n".format(N_str, E_str, U_str))
+                            file.write("#-----------------------------\n")
                 
 
     
@@ -444,7 +392,7 @@ if __name__ =="__main__":
     transform_type = input('Wybierz transformację (1 - xyz2blh, 2 - blh2xyz, 3 - bl2PL1992, 4 - PL1992tobl, 5 - bl2PL2000, 6 - PL2000tobl, 7 - xyz2neu, 8 - neu2XYZ): ')
     input_file = input('Podaj nazwę pliku ze współrzędnymi: ')
     output_file = input('Podaj nazwę pliku pod jakim chcesz zapisać transformowane współrzędne: ')
-    format_choice = input('Wybierz format wyników (1 - degrees_decimal, 2 - dms, 3 - XYZ, ): ')
+    #format_choice = input('Wybierz format wyników (1 - BLH/degrees_decimal, 2 - BLH/dms, 3 - XYZ, 4 - X92/Y92, 5 - BL/dms, 6 - X2000/Y2000, 7 - BL/degrees_decimal, 8 - NEU): ')
     
     transformer = Transformacje_wspolrzednych(model)
     if transform_type in ['7', '8']:
@@ -452,7 +400,27 @@ if __name__ =="__main__":
         y0 = float(input('Podaj wartość y0: '))
         z0 = float(input('Podaj wartość z0: '))
     # Wywołanie metody perform_transform z podanymi argumentami
-        transformer.perform_transform(transform_type, input_file, output_file, format_choice, x0, y0, z0)
+        if transform_type == '7':
+            forma = '8'
+            transformer.perform_transform(transform_type, input_file, output_file, forma, x0, y0, z0)
+        elif transform_type == '8':
+            forma = '3'
+            transformer.perform_transform(transform_type, input_file, output_file, forma, x0, y0, z0)
+    if transform_type == '1':
+        format_choice = input("Wybierz format wyników (1 - BLH/degrees_decimal, 2 - BLH/dms): ")
+        transformer.perform_transform(transform_type, input_file, output_file, format_choice) 
+    elif transform_type == '2':
+        forma = '3'
+        transformer.perform_transform(transform_type, input_file, output_file, forma) 
+    elif transform_type == '3':
+        forma = '4'
+        transformer.perform_transform(transform_type, input_file, output_file, forma) 
+    elif transform_type in ['4', '6']:
+         format_choice = input("Wybierz format wyników (5 - BL/dms, 7 - BL/degrees_decimal): ")
+         transformer.perform_transform(transform_type, input_file, output_file, format_choice) 
+    elif transform_type == '5':
+        forma = '6'
+        transformer.perform_transform(transform_type, input_file, output_file, forma) 
     else:
         # Wywołanie metody perform_transform bez dodatkowych argumentów
         transformer.perform_transform(transform_type, input_file, output_file, format_choice)   
@@ -460,34 +428,4 @@ if __name__ =="__main__":
     
    
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    # def xyz_to_neu(self, x, y, z, x_ref, y_ref, z_ref):
-        
-        
-    #     pass
-
-    # def bl_to_2000(self, fi, lam, h, elipsoida):
-    #     # Metoda przekształcająca współrzędne BL na 2000
-    #     pass
-
-    # def bl_to_1992(self, fi, lam, h, elipsoida):
-        
-    #     pass
+ 
