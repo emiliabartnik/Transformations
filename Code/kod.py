@@ -40,25 +40,14 @@ class Transformacje_wspolrzednych:
             phi = np.arctan(Z / (p * (1 - (self.e2 * (N / (N + h))))))
             if abs(phi - phi_poprzednie) < (0.000001/206265):
               break
-         
-        if forma == '1':
-              phi = np.degrees(phi)
-              lam = np.degrees(lam)
       
-        elif forma == '2':
-          phi_deg = np.degrees(phi)
-          phi_min, phi_sec = divmod(phi_deg * 3600, 60)
-          phi = (int(phi_min), int(phi_sec))
-          
-          lam_deg = np.degrees(lam)
-          lam_min, lam_sec = divmod(lam_deg * 3600, 60)
-          lam = (int(lam_min), int(lam_sec))
-      
-        result = [phi, lam, h]
+        result = [np.rad2deg(phi), np.rad2deg(lam), h]
         return result
     
     def blh2xyz(self, plh, forma = '3'):
-        phi, lam, h = plh
+        phi1, lam1, h = plh
+        phi = np.deg2rad(phi1)
+        lam = np.deg2rad(lam1)
         N = self.a / np.sqrt(1 - self.e2 * np.sin(phi)**2)
         X = (N + h) * np.cos(phi) * np.cos(lam)
         Y = (N + h) * np.cos(phi) * np.sin(lam)
@@ -86,7 +75,9 @@ class Transformacje_wspolrzednych:
     def bl2PL1992(self, plh, forma = '4'):
         m1992 = 0.9993
         lam0 = np.deg2rad(19)
-        phi,lam,h = plh
+        phi1,lam1,h = plh
+        phi = np.deg2rad(phi1)
+        lam = np.deg2rad(lam1)
         b2 = self.a**2 * (1-self.e2)
         e22 = (self.a**2 - b2) / b2
         dl = lam - lam0
@@ -126,14 +117,16 @@ class Transformacje_wspolrzednych:
         eta21 = e22 * (np.cos(phi1))**2 
         phi = phi1 - (ygk**2 * t1 / (2*M1*N1)) * (1-(ygk**2/(12*N1**2)) * (5 + 3 * t1**2 + eta21 - 9 * eta21 * t1**2 - 4 * eta21**2) + (ygk**4/(360 * N1**4)) * (61 + 90 * t1**2 + 45 * t1**4))
         lam = l0 + (ygk / (N1 * np.cos(phi1))) * ((1 - (ygk**2 / (6 *N1**2)) * (1 + 2*t1**2 + eta21) + (ygk**4 / (120*N1**4)) * (5 + 28*t1**2 +24*t1**4 +6*eta21 + 8*eta21*t1**2)))
-        result = [phi, lam]
+        result = [np.rad2deg(phi), np.rad2deg(lam)]
         return result
     
 
 
     def bl2PL2000(self, plh, forma ='6'):
         m2000 = 0.999923
-        phi, lam, h = plh
+        phi1, lam1, h = plh
+        phi = np.deg2rad(phi1)
+        lam = np.deg2rad(lam1)
         try:
             if lam >= np.deg2rad(13.5) and lam <= np.deg2rad(16.5):
                 strefa = 5
@@ -210,7 +203,7 @@ class Transformacje_wspolrzednych:
             phi = phi1 - (ygk**2 * t1 / (2*M1*N1)) * (1-(ygk**2/(12*N1**2)) * (5 + 3 * t1**2 + eta21 - 9 * eta21 * t1**2 - 4 * eta21**2) + (ygk**4/(360 * N1**4)) * (61 + 90 * t1**2 + 45 * t1**4))
             lam = l0 + (ygk / (N1 * np.cos(phi1))) * ((1 - (ygk**2 / (6 *N1**2)) * (1 + 2*t1**2 + eta21) + (ygk**4 / (120*N1**4)) * (5 + 28*t1**2 +24*t1**4 +6*eta21 + 8*eta21*t1**2)))
 
-            result = [phi, lam]
+            result = [np.rad2deg(phi), np.rad2deg(lam)]
             return result
         except Exception as e:
             print(f"Błąd w funkcji PL2000tobl: {e}")
