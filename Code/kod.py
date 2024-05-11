@@ -29,6 +29,18 @@ class Transformacje_wspolrzednych:
 
     
     def xyz2blh(self, xyz, forma = '1'):
+        '''
+        
+        Parameters
+        ----------
+        xyz : Lista zawierająca współrzędne XYZ.
+        forma : Format w jakim zapisane zostaną wyniki transformacji
+
+        Returns
+        -------
+        result : Wartoci wspołrzędnych phi, lambda, h. Wartoci phi i lambda w stopniach
+
+        '''
         X,Y,Z = xyz
         p = np.sqrt(X**2 + Y**2)
         lam = np.arctan2(Y,X)
@@ -45,6 +57,19 @@ class Transformacje_wspolrzednych:
         return result
     
     def blh2xyz(self, plh, forma = '3'):
+        '''
+        
+
+        Parameters
+        ----------
+        plh : Lista zawierająca wspołrzędne phi, lambda i h Phi, lambda w stopniach.
+        forma : Format w jakim zapisane zostaną wyniki transformacji
+
+        Returns
+        -------
+        result : Wartoci współrzędnych XYZ.
+
+        '''
         phi1, lam1, h = plh
         phi = np.deg2rad(phi1)
         lam = np.deg2rad(lam1)
@@ -73,6 +98,19 @@ class Transformacje_wspolrzednych:
         return(M)
     
     def bl2PL1992(self, plh, forma = '4'):
+        '''
+        
+
+        Parameters
+        ----------
+        plh : Lista zawierająca wspołrzędne phi, lambda i h Phi, lambda w stopniach.
+        forma : Format w jakim zapisane zostaną wyniki transformacji
+
+        Returns
+        -------
+        result : Wartoci współrzędnych X1992 i Y1992.
+
+        '''
         m1992 = 0.9993
         lam0 = np.deg2rad(19)
         phi1,lam1,h = plh
@@ -94,6 +132,19 @@ class Transformacje_wspolrzednych:
         
         
     def PL1992tobl(self, x92y92, forma='5'):
+        '''
+        
+
+        Parameters
+        ----------
+        x92y92 : Lista zawierająca współrzędne X1992 i Y1992
+        forma : Format w jakim zapisane zostaną wyniki transformacji
+
+        Returns
+        -------
+        result : Wartoci wspołrzędnych phi, lambda. Wartoci phi i lambda w stopniach
+
+        '''
         x92, y92 = x92y92
         m1992 = 0.9993
         l0 = np.deg2rad(19)
@@ -123,6 +174,24 @@ class Transformacje_wspolrzednych:
 
 
     def bl2PL2000(self, plh, forma ='6'):
+        '''
+        
+
+        Parameters
+        ----------
+        plh : Lista zawierająca wspołrzędne phi, lambda i h Phi, lambda w stopniach.
+        forma : Format w jakim zapisane zostaną wyniki transformacji
+
+        Raises
+        ------
+        ValueError
+            Jeli wartosc lambdy nie zawietra się w żadnym z przewidzianych zaresów, działanie funkcji kończy ValueError
+
+        Returns
+        -------
+        result : Wartoci współrzędnych X2000 i Y2000.
+
+        '''
         m2000 = 0.999923
         phi1, lam1, h = plh
         phi = np.deg2rad(phi1)
@@ -162,6 +231,19 @@ class Transformacje_wspolrzednych:
     
     
     def PL2000tobl(self, x2000y2000, forma='5'):
+        '''
+        
+
+        Parameters
+        ----------
+        x2000y2000 : Lista zawierająca współrzędne X2000 i Y2000
+        forma : Format w jakim zapisane zostaną wyniki transformacji
+
+        Returns
+        -------
+        result : Wartoci wspołrzędnych phi, lambda. Wartoci phi i lambda w stopniach
+
+        '''
         m2000 = 0.999923
         x2000, y2000 = x2000y2000
         l0 = np.deg2rad(19)
@@ -212,6 +294,22 @@ class Transformacje_wspolrzednych:
     
     
     def xyz2neu (self, xyz, x0,y0,z0, forma = '8'):
+        '''
+        
+
+        Parameters
+        ----------
+        xyz : Lista zawierająca współrzędne XYZ
+        x0 : float; współrzedna referencyjna X
+        y0 : float; współrzedna referencyjna Y
+        z0 : float; współrzedna referencyjna Z
+        forma : Format w jakim zapisane zostaną wyniki transformacji
+
+        Returns
+        -------
+        result : Zwraca współzędne wektora N,E,U
+
+        '''
         x, y, z = xyz
         x0y0z0 = [x0, y0, z0]
         phi, lam, h = self.xyz2blh(x0y0z0)
@@ -227,6 +325,22 @@ class Transformacje_wspolrzednych:
     
     
     def neu2XYZ(self, NEU, x0, y0, z0, forma = '3'):
+        '''
+        
+
+        Parameters
+        ----------
+        NEU : Lista zawierajace wspolrzedne N,E,U
+        x0 : float; współrzedna referencyjna X
+        y0 : float; współrzedna referencyjna Y
+        z0 : float; współrzedna referencyjna Z
+        forma : Format w jakim zapisane zostaną wyniki transformacji
+
+        Returns
+        -------
+        result : Wartoci współrzędnych X,Y,Z
+
+        '''
         n, e, u = NEU
         x0y0z0 = [x0, y0, z0]
         phi, lam, h = self.xyz2blh(x0y0z0)
