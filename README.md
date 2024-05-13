@@ -39,4 +39,4 @@ Po wykonaniu wszystkich działań program się zamknie, a plik z naszymi wspołr
 
 ## Autorki
 
-Za stworzenie projektu odpowiedzialne są @emiliabartnik oraz @weronikaga.
+Za stworzenie projektu odpowiedzialne są [@emiliabartnik](https://github.com/emiliabartnik) oraz [@weronikaga](https://github.com/weronikaga).
