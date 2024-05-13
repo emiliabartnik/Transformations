@@ -64,13 +64,15 @@ class Transformacje_wspolrzednych:
         return result
     
     def blh2xyz(self, plh, forma = '3'):
-        '''
         
+        '''
+        Konwertuje współrzędne geodezyjne (szerokość geograficzna, długość geograficzna, wysokość) na współrzędne kartezjańskie (X, Y, Z).
 
         Parameters
         ----------
         plh : Lista zawierająca wspołrzędne phi, lambda i h Phi, lambda w stopniach.
         forma : Format w jakim zapisane zostaną wyniki transformacji
+        Domyślnie ustawiony na '3'.
 
         Returns
         -------
@@ -88,12 +90,28 @@ class Transformacje_wspolrzednych:
         return result    
     
     def sigma(self, f):
+        
+        """
+        Oblicza wartość sigma na podstawie podanej szerokości geograficznej.
+
+        Parameters
+        ----------
+            f (float): Szerokość geograficzna w radianach.
+       
+        Returns
+        -------
+            float: Wartość sigma obliczona na podstawie podanej szerokości geograficznej.
+
+
+   """
         A0 = 1 - self.e2/4 - 3*self.e2**2/64 - 5*self.e2**3/256
         A2 = (3/8) * (self.e2 + self.e2**2/4 + 15*self.e2**3/128)
         A4 = (15/256) * (self.e2**2 + 3*self.e2**3/4)
         A6 = (35*self.e2**3)/3072
         si = self.a * (A0 * f - A2 * np.sin(2*f) + A4 * np.sin(4*f) - A6 * np.sin(6*f))
         return(si)
+    
+    
     
     def Np(self,f):
         
@@ -133,6 +151,8 @@ class Transformacje_wspolrzednych:
         M = (self.a * (1 - self.e2)) / np.sqrt((1 - self.e2 * np.sin(f)**2)**3)
         return(M)
     
+    
+    
     def bl2PL1992(self, plh, forma = '4'):
         '''
         Przekształca współrzędne geograficzne (BL) na współrzędne układu PL-1992 (X1992, Y1992).
@@ -140,7 +160,7 @@ class Transformacje_wspolrzednych:
 
         Parameters
         ----------
-        plh : Lista zawierająca wspołrzędne phi, lambda i h, gdzie Phi, lambda są podane w stopniach.
+        plh : Lista zawierająca wspołrzędne phi, lambda i h, gdzie phi, lambda są podane w stopniach.
         forma : Format w jakim zapisane zostaną wyniki transformacji
                 Domyślnie ustawiony na '4'.
 
@@ -370,7 +390,7 @@ class Transformacje_wspolrzednych:
         xyz_t = np.array([[x-x0],
                          [y-y0],
                          [z-z0]])
-        [[E],[N],[U]] = R.T @ xyz_t
+        [[N],[E],[U]] = R.T @ xyz_t
         result = [N, E, U]
         return result
     
@@ -497,7 +517,7 @@ class Transformacje_wspolrzednych:
                         file.write("{:<10}, {:<15}, {:<15}\n".format(X_str, Y_str, Z_str))
                         
                 elif format_choice == '2' or format_choice == '1':  # xyz2blh lub inne transformacje
-                    file.write("{:>9}{:>15}{:>17}\n".format("b", "l".rjust(20), "h".rjust(15)))
+                    file.write("{:>9}{:>15}{:>17}\n".format("b", "l".rjust(18), "h".rjust(15)))
                     header_written = False 
                     for result in results:
                         if not header_written:  # Sprawdzamy, czy nagłówek już został zapisany
@@ -523,9 +543,9 @@ class Transformacje_wspolrzednych:
                             h_str = f"{h:.3f}".rjust(12)
                             file.write("{:<10},{:<10},{:<10}\n".format(phi_str, lam_str, h_str))
                         elif format_choice == '1':  # degrees_decimal
-                            phi_str = f"{phi:.8f}"
-                            lam_str = f"{lam:.8f}".rjust(20)
-                            h_str = f"{h:.8f}".rjust(20)
+                            phi_str = f"{phi:.5f}"
+                            lam_str = f"{lam:.5f}".rjust(15)
+                            h_str = f"{h:.3f}".rjust(15)
                             file.write("{:<10},{:<10},{:<10}\n".format(phi_str, lam_str, h_str))
                             
         
@@ -576,7 +596,20 @@ class Transformacje_wspolrzednych:
                                 lam_str = f"{lam:.8f}".rjust(15)
                                 file.write("{:<15},{:<15}\n".format(phi_str, lam_str))
                     if not header_written:  # Sprawdzamy, czy nagłówek został już zapisany
-                        file.write("#-----------------------------\n")  # Jeśli nie został zapisany, zapisujemy go teraz
+                        file.write("#-----------------------------\n")  # Jeśli nie został zapisany, zapisujemy go 
+               
+                        
+                elif format_choice == '8':  # xyz2neu
+                    file.write("{:>9}{:>15}{:>17}\n".format("N [m]", "E [m]".rjust(17), "U [m]".rjust(15)))
+                    header_written = False
+                    for result in results:
+                        if not header_written:  # Sprawdzamy, czy nagłówek już został zapisany
+                            file.write("#-----------------------------\n")  # Zapisujemy nagłówek tylko raz
+                            header_written = True
+                        N_str = f"{result[0]:.3f}"
+                        E_str = f"{result[1]:.3f}".rjust(15)
+                        U_str = f"{result[2]:.3f}".rjust(15)
+                        file.write("{:<10}, {:<15}, {:<15}\n".format(N_str, E_str, U_str))
 
                 
 
@@ -594,21 +627,45 @@ if __name__ =="__main__":
     Po przekształceniu współrzędnych wyniki są zapisywane do wskazanego pliku wyjściowego.
     """
     
+    
     #Wczytanie modelu 
     geo = Transformacje_wspolrzednych()
     
-    model = input('wybierz model: 1 - wgs84 / 2 - grs80 / 3 - Krasowski: ')
-    transform_type = input('Wybierz transformację (1 - xyz2blh, 2 - blh2xyz, 3 - bl2PL1992, 4 - PL1992tobl, 5 - bl2PL2000, 6 - PL2000tobl, 7 - xyz2neu, 8 - neu2XYZ): ')
+    while True:
+        model = input('wybierz model: 1 - wgs84 / 2 - grs80 / 3 - Krasowski: ')
+        if model in ['1', '2', '3']:
+            break 
+        else:
+           print("Niepoprawny wybór modelu. Wybierz 1, 2 lub 3.")
+           
+           
+    while True:   
+        try:
+            transform_type = input('Wybierz transformację (1 - xyz2blh, 2 - blh2xyz, 3 - bl2PL1992, 4 - PL1992tobl, 5 - bl2PL2000, 6 - PL2000tobl, 7 - xyz2neu, 8 - neu2XYZ): ')
+            if transform_type not in ['1', '2', '3', '4', '5', '6','7', '8']:
+                raise ValueError
+            break
+        except ValueError:
+            print("Niepoprawny wybór transformacji. Wybierz 1, 2, 3, 4, 5, 6, 7 lub 8.")
+        
+        
     input_file = input('Podaj nazwę pliku ze współrzędnymi: ')
+    
     output_file = input('Podaj nazwę pliku pod jakim chcesz zapisać transformowane współrzędne: ')
     #format_choice = input('Wybierz format wyników (1 - BLH/degrees_decimal, 2 - BLH/dms, 3 - XYZ, 4 - X92/Y92, 5 - BL/dms, 6 - X2000/Y2000, 7 - BL/degrees_decimal, 8 - NEU): ')
     
     transformer = Transformacje_wspolrzednych(model)
     if transform_type in ['7', '8']:
-        x0 = float(input('Podaj wartość x0: '))
-        y0 = float(input('Podaj wartość y0: '))
-        z0 = float(input('Podaj wartość z0: '))
-    # Wywołanie metody perform_transform z podanymi argumentami
+        
+        while True:  
+            try:
+                x0 = float(input('Podaj wartość x0: '))
+                y0 = float(input('Podaj wartość y0: '))
+                z0 = float(input('Podaj wartość z0: '))
+                break # Jeśli wszystkie wartości są poprawne, wyjście z pętli
+            except ValueError:
+                print("Niepoprawny format. Wprowadź poprawną liczbę.")
+
         if transform_type == '7':
             forma = '8'
             transformer.perform_transform(transform_type, input_file, output_file, forma, x0, y0, z0)
@@ -630,9 +687,7 @@ if __name__ =="__main__":
     elif transform_type == '5':
         forma = '6'
         transformer.perform_transform(transform_type, input_file, output_file, forma) 
-    else:
-        # Wywołanie metody perform_transform bez dodatkowych argumentów
-        transformer.perform_transform(transform_type, input_file, output_file, format_choice)   
+  
         
     
    
