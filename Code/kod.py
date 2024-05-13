@@ -30,17 +30,24 @@ class Transformacje_wspolrzednych:
     
     def xyz2blh(self, xyz, forma = '1'):
         '''
+        Przekształca współrzędne kartezjańskie (XYZ) na współrzędne geograficzne (BLH).
         
         Parameters
         ----------
-        xyz : Lista zawierająca współrzędne XYZ.
-        forma : Format w jakim zapisane zostaną wyniki transformacji
-
+        xyz : list
+            Lista zawierająca współrzędne XYZ.
+    
+        forma : str, opcjonalne
+            Format w jakim zapisane zostaną wyniki transformacji.
+            Domyślnie ustawiony na '1'.
+    
         Returns
         -------
-        result : Wartoci wspołrzędnych phi, lambda, h. Wartoci phi i lambda w stopniach
-
+        result : list
+            Wartości współrzędnych phi, lambda, h.
+            Wartości phi i lambda w stopniach.
         '''
+        
         X,Y,Z = xyz
         p = np.sqrt(X**2 + Y**2)
         lam = np.arctan2(Y,X)
@@ -89,26 +96,58 @@ class Transformacje_wspolrzednych:
         return(si)
     
     def Np(self,f):
+        
+        """
+        Oblicza przekrój poprzeczny.
+
+        Parameters
+        ----------
+        f : float
+            Kąt geodezyjny w radianach.
+
+        Returns
+        -------
+        N : float
+            Przekrój poprzeczny dla danego kąta geodezyjnego.
+        """
+        
         N = self.a / np.sqrt(1 - self.e2 * np.sin(f)**2)
         return(N)
 
 
     def Mp(self, f):
+        
+        """
+        Oblicza promień główny krzywizny pierwszej dla danego kąta geodezyjnego.
+        
+        Parameters
+        ----------
+        f : float
+            Kąt geodezyjny w radianach.
+            
+        Returns
+        -------
+        M : float
+            Promień główny krzywizny pierwszej dla danego kąta geodezyjnego.
+        """
         M = (self.a * (1 - self.e2)) / np.sqrt((1 - self.e2 * np.sin(f)**2)**3)
         return(M)
     
     def bl2PL1992(self, plh, forma = '4'):
         '''
-        
+        Przekształca współrzędne geograficzne (BL) na współrzędne układu PL-1992 (X1992, Y1992).
+
 
         Parameters
         ----------
-        plh : Lista zawierająca wspołrzędne phi, lambda i h Phi, lambda w stopniach.
+        plh : Lista zawierająca wspołrzędne phi, lambda i h, gdzie Phi, lambda są podane w stopniach.
         forma : Format w jakim zapisane zostaną wyniki transformacji
+                Domyślnie ustawiony na '4'.
 
         Returns
         -------
-        result : Wartoci współrzędnych X1992 i Y1992.
+        result : list
+                Wartoci współrzędnych X1992 i Y1992.
 
         '''
         m1992 = 0.9993
@@ -133,13 +172,14 @@ class Transformacje_wspolrzednych:
         
     def PL1992tobl(self, x92y92, forma='5'):
         '''
-        
+        Przekształca współrzędne układu PL-1992 (X1992, Y1992) na współrzędne geograficzne (BLH).
+
 
         Parameters
         ----------
         x92y92 : Lista zawierająca współrzędne X1992 i Y1992
         forma : Format w jakim zapisane zostaną wyniki transformacji
-
+                Domyślnie ustawiony na '5'.
         Returns
         -------
         result : Wartoci wspołrzędnych phi, lambda. Wartoci phi i lambda w stopniach
@@ -175,13 +215,14 @@ class Transformacje_wspolrzednych:
 
     def bl2PL2000(self, plh, forma ='6'):
         '''
-        
+        Przekształca współrzędne geograficzne (BLH) na współrzędne układu PL-2000 (X2000, Y2000).
+
 
         Parameters
         ----------
         plh : Lista zawierająca wspołrzędne phi, lambda i h Phi, lambda w stopniach.
         forma : Format w jakim zapisane zostaną wyniki transformacji
-
+                Domyślnie ustawiony na '6'.
         Raises
         ------
         ValueError
@@ -232,16 +273,25 @@ class Transformacje_wspolrzednych:
     
     def PL2000tobl(self, x2000y2000, forma='5'):
         '''
-        
+        Przekształca współrzędne układu PL-2000 (X2000, Y2000) na współrzędne geograficzne (BLH).
+
 
         Parameters
         ----------
         x2000y2000 : Lista zawierająca współrzędne X2000 i Y2000
         forma : Format w jakim zapisane zostaną wyniki transformacji
-
+                Domyślnie ustawiony na '5'.
+                
+            
         Returns
         -------
         result : Wartoci wspołrzędnych phi, lambda. Wartoci phi i lambda w stopniach
+
+
+        Raises
+        ------
+        ValueError
+            Jeśli nie można określić strefy na podstawie wartości y2000, zgłaszany jest błąd.
 
         '''
         m2000 = 0.999923
@@ -295,7 +345,8 @@ class Transformacje_wspolrzednych:
     
     def xyz2neu (self, xyz, x0,y0,z0, forma = '8'):
         '''
-        
+        Przekształca współrzędne XYZ na współrzędne lokalnego układu współrzędnych NEU (północ, wschód, wzniesienie).
+
 
         Parameters
         ----------
@@ -304,7 +355,7 @@ class Transformacje_wspolrzednych:
         y0 : float; współrzedna referencyjna Y
         z0 : float; współrzedna referencyjna Z
         forma : Format w jakim zapisane zostaną wyniki transformacji
-
+                Domyślnie ustawiony na '8'.
         Returns
         -------
         result : Zwraca współzędne wektora N,E,U
@@ -327,6 +378,7 @@ class Transformacje_wspolrzednych:
     def neu2XYZ(self, NEU, x0, y0, z0, forma = '3'):
         '''
         
+        Przekształca współrzędne lokalnego układu współrzędnych NEU (północ, wschód, wzniesienie) na współrzędne XYZ.
 
         Parameters
         ----------
@@ -335,6 +387,7 @@ class Transformacje_wspolrzednych:
         y0 : float; współrzedna referencyjna Y
         z0 : float; współrzedna referencyjna Z
         forma : Format w jakim zapisane zostaną wyniki transformacji
+                Domyślnie ustawiony na '3'.
 
         Returns
         -------
@@ -357,10 +410,44 @@ class Transformacje_wspolrzednych:
     def perform_transform(self, transform_type, input_file, output_file, format_choice, x0 = 0, y0 = 0, z0 =0):
         """
         Wykonuje wybraną transformację na danych z pliku wejściowego i zapisuje wyniki do pliku wyjściowego.
-        transform_type: Typ transformacji ('xyz2blh', 'blh2xyz', 'xyz2neu', 'neu2xyz')
-        input_file: Nazwa pliku wejściowego
-        output_file: Nazwa pliku wyjściowego
+
+        Parametry:
+        -----------
+        transform_type : str
+            Typ transformacji.
+            Możliwe wartości:
+            '1' - xyz2blh,
+            '2' - blh2xyz,
+            '3' - bl2PL1992,
+            '4' - PL1992tobl,
+            '5' - bl2PL2000,
+            '6' - PL2000tobl,
+            '7' - xyz2neu,
+            '8' - neu2XYZ.
+    
+        input_file : str
+            Nazwa pliku wejściowego zawierającego współrzędne.
+    
+        output_file : str
+            Nazwa pliku wyjściowego, do którego zostaną zapisane przekształcone współrzędne.
+    
+        format_choice : str
+            Wybór formatu wyników.
+            Możliwe wartości:
+                '1' - BLH/degrees_decimal,
+                '2' - BLH/dms,
+                '3' - XYZ,
+                '4' - X92/Y92,
+                '5' - BL/dms,
+                '6' - X2000/Y2000,
+                '7' - BL/degrees_decimal,
+                '8' - NEU.
+    
+        x0, y0, z0 : float, opcjonalne
+            Wartości referencyjne dla transformacji typu '7' (xyz2neu) lub '8' (neu2XYZ).
+            Domyślnie wynoszą 0.
         """
+        
         results = []
         with open(input_file, 'r') as file:
             found_start = False
@@ -438,7 +525,7 @@ class Transformacje_wspolrzednych:
                         elif format_choice == '1':  # degrees_decimal
                             phi_str = f"{phi:.8f}"
                             lam_str = f"{lam:.8f}".rjust(20)
-                            h_str = f"{h:.8f}".rjust(12)
+                            h_str = f"{h:.8f}".rjust(20)
                             file.write("{:<10},{:<10},{:<10}\n".format(phi_str, lam_str, h_str))
                             
         
@@ -497,6 +584,16 @@ class Transformacje_wspolrzednych:
 
     
 if __name__ =="__main__":
+    
+    """
+    Główny blok kodu, który zostanie wykonany tylko wtedy, gdy ten plik zostanie uruchomiony jako program główny.
+    W tym bloku użytkownik jest proszony o wybór modelu, transformacji, nazwy pliku wejściowego i wyjściowego.
+    Następnie wykonywane są odpowiednie transformacje na podstawie wyborów użytkownika.
+    Użytkownik ma możliwość wyboru różnych opcji formatowania wyników w zależności od wybranej transformacji.
+    Jeśli transformacja wymaga dodatkowych parametrów (x0, y0, z0), użytkownik jest proszony o ich podanie.
+    Po przekształceniu współrzędnych wyniki są zapisywane do wskazanego pliku wyjściowego.
+    """
+    
     #Wczytanie modelu 
     geo = Transformacje_wspolrzednych()
     
