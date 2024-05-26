@@ -151,6 +151,7 @@ class Transformacje_wspolrzednych:
         M = (self.a * (1 - self.e2)) / np.sqrt((1 - self.e2 * np.sin(f)**2)**3)
         return(M)
     
+    #def xyzk2PL1992(self, xyz, forma = '4')
     
     
     def bl2PL1992(self, plh, forma = '4'):
@@ -175,18 +176,53 @@ class Transformacje_wspolrzednych:
         phi1,lam1,h = plh
         phi = np.deg2rad(phi1)
         lam = np.deg2rad(lam1)
-        b2 = self.a**2 * (1-self.e2)
-        e22 = (self.a**2 - b2) / b2
-        dl = lam - lam0
-        t = np.tan(phi)
-        eta2 = e22 * (np.cos(phi))**2
-        N = self.Np(phi)
-        si = self.sigma(phi)
-        xgk = si + (dl**2/2) * N * np.sin(phi) * np.cos(phi) * ((1 + (dl**2/12)*(np.cos(phi))**2 * (5 -t**2 +9*eta2 + 4*eta2**2) + (dl**4/360) * np.cos(phi)**4 * (61 - 58 * t**2 + t**4 + 270*eta2 - 330 * eta2 * t**2)))
-        ygk = dl * N * np.cos(phi) * (1 + (dl**2/6) * np.cos(phi)**2 * (1 - t**2 + eta2) + (dl**4/120) * np.cos(phi)**4 * (5 - 18*t**2 + t**4 + 14*eta2 - 58*eta2*t**2))
-        x1992 = xgk * m1992 - 5300000
-        y1992 = ygk * m1992 + 500000
-        result = [x1992, y1992]
+        if model == '3':
+            phi1, lam1, h = plh
+            phi = np.deg2rad(phi1)
+            lam = np.deg2rad(lam1)
+            N = self.a / np.sqrt(1 - self.e2 * np.sin(phi)**2)
+            x = (N + h) * np.cos(phi) * np.cos(lam)
+            y = (N + h) * np.cos(phi) * np.sin(lam)
+            z = (N * (1-self.e2) + h) * np.sin(phi)
+            A = np.array([[1-0.84078048e-6, -4.08959962e-6, -0.25614575e-6],
+                         [-4.08960650e-6, 1+0.84076292e-6, -1.73888787e-6],
+                         [-0.25614618e-6, 1.73888682e-6, 1+0.84077125e-6]])
+            B = np.array([[x + 33.4297],
+                         [y - 146.5746],
+                         [z - 76.2865]])
+            xyzg = A @ B
+            xg, yg, zg = xyzg
+            flattening = (6378137.0 - 6356752.3142) / 6378137.0
+            e2 = (2 *flattening - flattening ** 2)
+            b2 = 6378137.0**2 * (1-e2)
+            e22 = (6378137.0**2 - b2) / b2
+            dl = lam - lam0
+            t = np.tan(phi)
+            eta2 = e22 * (np.cos(phi))**2
+            N = 6378137.0 / np.sqrt(1 - e2 * np.sin(phi)**2)
+            A0 = 1 - e2/4 - 3*e2**2/64 - 5*e2**3/256
+            A2 = (3/8) * (e2 + e2**2/4 + 15*e2**3/128)
+            A4 = (15/256) * (e2**2 + 3*e2**3/4)
+            A6 = (35*e2**3)/3072
+            si = 6378137.0 * (A0 * phi - A2 * np.sin(2*phi) + A4 * np.sin(4*phi) - A6 * np.sin(6*phi))
+            xgk = si + (dl**2/2) * N * np.sin(phi) * np.cos(phi) * ((1 + (dl**2/12)*(np.cos(phi))**2 * (5 -t**2 +9*eta2 + 4*eta2**2) + (dl**4/360) * np.cos(phi)**4 * (61 - 58 * t**2 + t**4 + 270*eta2 - 330 * eta2 * t**2)))
+            ygk = dl * N * np.cos(phi) * (1 + (dl**2/6) * np.cos(phi)**2 * (1 - t**2 + eta2) + (dl**4/120) * np.cos(phi)**4 * (5 - 18*t**2 + t**4 + 14*eta2 - 58*eta2*t**2))
+            x1992 = xgk * m1992 - 5300000
+            y1992 = ygk * m1992 + 500000
+            result = [x1992, y1992]
+        else:
+            b2 = self.a**2 * (1-self.e2)
+            e22 = (self.a**2 - b2) / b2
+            dl = lam - lam0
+            t = np.tan(phi)
+            eta2 = e22 * (np.cos(phi))**2
+            N = self.Np(phi)
+            si = self.sigma(phi)
+            xgk = si + (dl**2/2) * N * np.sin(phi) * np.cos(phi) * ((1 + (dl**2/12)*(np.cos(phi))**2 * (5 -t**2 +9*eta2 + 4*eta2**2) + (dl**4/360) * np.cos(phi)**4 * (61 - 58 * t**2 + t**4 + 270*eta2 - 330 * eta2 * t**2)))
+            ygk = dl * N * np.cos(phi) * (1 + (dl**2/6) * np.cos(phi)**2 * (1 - t**2 + eta2) + (dl**4/120) * np.cos(phi)**4 * (5 - 18*t**2 + t**4 + 14*eta2 - 58*eta2*t**2))
+            x1992 = xgk * m1992 - 5300000
+            y1992 = ygk * m1992 + 500000
+            result = [x1992, y1992]
         return result
         
         
@@ -272,19 +308,53 @@ class Transformacje_wspolrzednych:
                 lam0 = np.deg2rad(24)
             else:
                 raise ValueError("Niepoprawna wartość lam")
-        
-            b2 = self.a**2 * (1 - self.e2)
-            e22 = (self.a**2 - b2) / b2
-            dl = lam - lam0
-            t = np.tan(phi)
-            eta2 = e22 * (np.cos(phi))**2
-            N = self.Np(phi)
-            si = self.sigma(phi)
-            xgk = si + (dl**2/2) * N * np.sin(phi) * np.cos(phi) * ((1 + (dl**2/12) * (np.cos(phi))**2 * (5 - t**2 + 9*eta2 + 4*eta2**2) + (dl**4/360) * np.cos(phi)**4 * (61 - 58 * t**2 + t**4 + 270*eta2 - 330 * eta2 * t**2)))
-            ygk = dl * N * np.cos(phi) * (1 + (dl**2/6) * np.cos(phi)**2 * (1 - t**2 + eta2) + (dl**4/120) * np.cos(phi)**4 * (5 - 18*t**2 + t**4 + 14*eta2 - 58*eta2*t**2))
-            x2000 = xgk * m2000
-            y2000 = ygk * m2000 + strefa * 1000000 + 500000
-            result = [x2000, y2000]
+            if model == '3':
+                phi1, lam1, h = plh
+                phi = np.deg2rad(phi1)
+                lam = np.deg2rad(lam1)
+                N = self.a / np.sqrt(1 - self.e2 * np.sin(phi)**2)
+                x = (N + h) * np.cos(phi) * np.cos(lam)
+                y = (N + h) * np.cos(phi) * np.sin(lam)
+                z = (N * (1-self.e2) + h) * np.sin(phi)
+                A = np.array([[1-0.84078048e-6, -4.08959962e-6, -0.25614575e-6],
+                             [-4.08960650e-6, 1+0.84076292e-6, -1.73888787e-6],
+                             [-0.25614618e-6, 1.73888682e-6, 1+0.84077125e-6]])
+                B = np.array([[x + 33.4297],
+                             [y - 146.5746],
+                             [z - 76.2865]])
+                xyzg = A @ B
+                xg, yg, zg = xyzg
+                flattening = (6378137.0 - 6356752.3142) / 6378137.0
+                e2 = (2 *flattening - flattening ** 2)
+                b2 = 6378137.0**2 * (1-e2)
+                e22 = (6378137.0**2 - b2) / b2
+                dl = lam - lam0
+                t = np.tan(phi)
+                eta2 = e22 * (np.cos(phi))**2
+                N = 6378137.0 / np.sqrt(1 - e2 * np.sin(phi)**2)
+                A0 = 1 - e2/4 - 3*e2**2/64 - 5*e2**3/256
+                A2 = (3/8) * (e2 + e2**2/4 + 15*e2**3/128)
+                A4 = (15/256) * (e2**2 + 3*e2**3/4)
+                A6 = (35*e2**3)/3072
+                si = 6378137.0 * (A0 * phi - A2 * np.sin(2*phi) + A4 * np.sin(4*phi) - A6 * np.sin(6*phi))
+                xgk = si + (dl**2/2) * N * np.sin(phi) * np.cos(phi) * ((1 + (dl**2/12)*(np.cos(phi))**2 * (5 -t**2 +9*eta2 + 4*eta2**2) + (dl**4/360) * np.cos(phi)**4 * (61 - 58 * t**2 + t**4 + 270*eta2 - 330 * eta2 * t**2)))
+                ygk = dl * N * np.cos(phi) * (1 + (dl**2/6) * np.cos(phi)**2 * (1 - t**2 + eta2) + (dl**4/120) * np.cos(phi)**4 * (5 - 18*t**2 + t**4 + 14*eta2 - 58*eta2*t**2))
+                x2000 = xgk * m2000
+                y2000 = ygk * m2000 + strefa * 1000000 + 500000
+                result = [x2000, y2000]
+            else:
+                b2 = self.a**2 * (1 - self.e2)
+                e22 = (self.a**2 - b2) / b2
+                dl = lam - lam0
+                t = np.tan(phi)
+                eta2 = e22 * (np.cos(phi))**2
+                N = self.Np(phi)
+                si = self.sigma(phi)
+                xgk = si + (dl**2/2) * N * np.sin(phi) * np.cos(phi) * ((1 + (dl**2/12) * (np.cos(phi))**2 * (5 - t**2 + 9*eta2 + 4*eta2**2) + (dl**4/360) * np.cos(phi)**4 * (61 - 58 * t**2 + t**4 + 270*eta2 - 330 * eta2 * t**2)))
+                ygk = dl * N * np.cos(phi) * (1 + (dl**2/6) * np.cos(phi)**2 * (1 - t**2 + eta2) + (dl**4/120) * np.cos(phi)**4 * (5 - 18*t**2 + t**4 + 14*eta2 - 58*eta2*t**2))
+                x2000 = xgk * m2000
+                y2000 = ygk * m2000 + strefa * 1000000 + 500000
+                result = [x2000, y2000]
             return result
         except ValueError as e:
             print(e)
