@@ -27,6 +27,11 @@ Po wybraniu odpowiedniego modelu, użytkownik będzie poproszony o wybranie rodz
 
 ![image](https://github.com/emiliabartnik/Transformations/assets/150865197/b4544802-346b-4d4c-acdc-e0896c7228c0)
 
+Dla modelu elipsoidy Krasowskiego możliwe są do wyboru następujące transformacje: 
+
+![image](https://github.com/emiliabartnik/Transformations/assets/166388445/df5d082e-c09f-488d-80a3-4123d29d07db)
+
+
 Po wybraniu interesującej nas transformacji program poprosi nas o wybranie pliku tekstowego ze współrzędnymi. Plik musi znajdować się w tej samej lokalizacji co plik z naszym kodem. Plik musi mieć nagłówek, którego końcowa linijka zaczyna się od znaku "#". W pliku współrzędne muszą być umieszczone w kolejnych kolumnach. Kolejne współrzędne muszą być oddzielone od siebie przecinkiem. Wartości dziesiętne muszą być zapisywane z kropką. Należy pamiętać o dopasowaniu pliku do transformacji, z której chcemy skorzystać. Jeśli wybieramy transformacje, w której współrzędnymi wejściowymi są wartości kątowe należy podać je w stopniach, w formacie dziesiętnym. Przykładowy wygląd pliku wejściowego:
 
 ![image](https://github.com/emiliabartnik/Transformations/assets/150865197/f4573582-27b1-4113-9205-a2cd259bb0ac)
