@@ -8,11 +8,11 @@ Program służy do transponowania współrzędnych pomiędzy różnymi układami
  
 	-{bl2PL1992}: Przekształca współrzędne geodezyjne (BL) na płaskie współrzędne (PL) w układzie 1992,
  
-	-{PL1992tobl}:  Przekształca płaskie współrzędne (PL) w układzie 1992 na współrzędne geodezyjne (BL),
+	-{PL1992tobl}:  Przekształca płaskie współrzędne (PL) w układzie 1992 na współrzędne geodezyjne (BL), wykona się dla modelu WGS84 oraz GRS80
 
 	-{bl2PL2000}: Przekształca współrzędne geodezyjne (BL) na płaskie współrzędne (PL) w układzie 2000,
  
-	-{PL2000tobl}: Przekształca płaskie współrzędne (PL) w układzie 2000 na współrzędne geodezyjne (BL),
+	-{PL2000tobl}: Przekształca płaskie współrzędne (PL) w układzie 2000 na współrzędne geodezyjne (BL), wykona się dla modelu WGS84 oraz GRS80
  
 	-{xyz2neu}: Przekształca współrzędne kartezjańskie (XYZ) na lokalny układ współrzędnych (NEU),
  
@@ -26,6 +26,11 @@ Aby uruchomić program należy, na komputerze z zainstalowanym Pythonem w wersji
 Po wybraniu odpowiedniego modelu, użytkownik będzie poproszony o wybranie rodzaju transformacji. 
 
 ![image](https://github.com/emiliabartnik/Transformations/assets/150865197/b4544802-346b-4d4c-acdc-e0896c7228c0)
+
+Dla modelu elipsoidy Krasowskiego możliwe są do wyboru następujące transformacje: 
+
+![image](https://github.com/emiliabartnik/Transformations/assets/166388445/df5d082e-c09f-488d-80a3-4123d29d07db)
+
 
 Po wybraniu interesującej nas transformacji program poprosi nas o wybranie pliku tekstowego ze współrzędnymi. Plik musi znajdować się w tej samej lokalizacji co plik z naszym kodem. Plik musi mieć nagłówek, którego końcowa linijka zaczyna się od znaku "#". W pliku współrzędne muszą być umieszczone w kolejnych kolumnach. Kolejne współrzędne muszą być oddzielone od siebie przecinkiem. Wartości dziesiętne muszą być zapisywane z kropką. Należy pamiętać o dopasowaniu pliku do transformacji, z której chcemy skorzystać. Jeśli wybieramy transformacje, w której współrzędnymi wejściowymi są wartości kątowe należy podać je w stopniach, w formacie dziesiętnym. Przykładowy wygląd pliku wejściowego:
 
