@@ -246,6 +246,8 @@ class Transformacje_wspolrzednych:
         l0 = np.deg2rad(19)
         xgk = (x92 + 5300000) / m1992
         ygk = (y92 - 500000) / m1992
+        
+        
     
         A0 = 1 - self.e2/4 - 3*self.e2**2/64 - 5*self.e2**3/256
         phi1 = xgk / (self.a * A0)
@@ -265,6 +267,7 @@ class Transformacje_wspolrzednych:
         phi = phi1 - (ygk**2 * t1 / (2*M1*N1)) * (1-(ygk**2/(12*N1**2)) * (5 + 3 * t1**2 + eta21 - 9 * eta21 * t1**2 - 4 * eta21**2) + (ygk**4/(360 * N1**4)) * (61 + 90 * t1**2 + 45 * t1**4))
         lam = l0 + (ygk / (N1 * np.cos(phi1))) * ((1 - (ygk**2 / (6 *N1**2)) * (1 + 2*t1**2 + eta21) + (ygk**4 / (120*N1**4)) * (5 + 28*t1**2 +24*t1**4 +6*eta21 + 8*eta21*t1**2)))
         result = [np.rad2deg(phi), np.rad2deg(lam)]
+        
         return result
     
 
@@ -708,15 +711,23 @@ if __name__ =="__main__":
         else:
            print("Niepoprawny wybór modelu. Wybierz 1, 2 lub 3.")
            
-           
-    while True:   
-        try:
-            transform_type = input('Wybierz transformację (1 - xyz2blh, 2 - blh2xyz, 3 - bl2PL1992, 4 - PL1992tobl, 5 - bl2PL2000, 6 - PL2000tobl, 7 - xyz2neu, 8 - neu2XYZ): ')
-            if transform_type not in ['1', '2', '3', '4', '5', '6','7', '8']:
-                raise ValueError
-            break
-        except ValueError:
-            print("Niepoprawny wybór transformacji. Wybierz 1, 2, 3, 4, 5, 6, 7 lub 8.")
+    
+    if model == '3':
+        while True:
+            transform_type = input('Wybierz transformację (1 - xyz2blh, 2 - blh2xyz, 3 - bl2PL1992, 5 - bl2PL2000, 7 - xyz2neu, 8 - neu2XYZ): ')
+            if transform_type in ['1', '2', '3', '5', '7', '8']:
+                break
+            else:
+                print("Niepoprawny wybór transformacji dla modelu 3. Wybierz 1, 2, 3, 5, 7 lub 8.")       
+    else:
+        while True:   
+            try:
+                transform_type = input('Wybierz transformację (1 - xyz2blh, 2 - blh2xyz, 3 - bl2PL1992, 4 - PL1992tobl, 5 - bl2PL2000, 6 - PL2000tobl, 7 - xyz2neu, 8 - neu2XYZ): ')
+                if transform_type not in ['1', '2', '3', '4', '5', '6','7', '8']:
+                    raise ValueError
+                break
+            except ValueError:
+                print("Niepoprawny wybór transformacji. Wybierz 1, 2, 3, 4, 5, 6, 7 lub 8.")
         
         
     input_file = input('Podaj nazwę pliku ze współrzędnymi: ')
@@ -760,6 +771,6 @@ if __name__ =="__main__":
   
         
     
-   
+
     
  
