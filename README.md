@@ -8,11 +8,11 @@ Program służy do transponowania współrzędnych pomiędzy różnymi układami
  
 	-{bl2PL1992}: Przekształca współrzędne geodezyjne (BL) na płaskie współrzędne (PL) w układzie 1992,
  
-	-{PL1992tobl}:  Przekształca płaskie współrzędne (PL) w układzie 1992 na współrzędne geodezyjne (BL),
+	-{PL1992tobl}:  Przekształca płaskie współrzędne (PL) w układzie 1992 na współrzędne geodezyjne (BL), wykona się dla wybranego modelu WGS84 oraz GRS80
 
 	-{bl2PL2000}: Przekształca współrzędne geodezyjne (BL) na płaskie współrzędne (PL) w układzie 2000,
  
-	-{PL2000tobl}: Przekształca płaskie współrzędne (PL) w układzie 2000 na współrzędne geodezyjne (BL),
+	-{PL2000tobl}: Przekształca płaskie współrzędne (PL) w układzie 2000 na współrzędne geodezyjne (BL), wykona się dla wybranego modelu WGS84 oraz GRS80
  
 	-{xyz2neu}: Przekształca współrzędne kartezjańskie (XYZ) na lokalny układ współrzędnych (NEU),
  
